@@ -59,9 +59,9 @@ function isAuthenticated(req, res, next){
 
 // passport strategy setup
 passport.use(new GoogleStrategy({
-    clientID: "816132586311-onbe8gnisnaers7jm08b9la7a3u7hv2t.apps.googleusercontent.com",
-    clientSecret: "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",
-    callbackURL: "http://localhost:5000/auth/google/callback"
+    clientID: "<Client_ID>",
+    clientSecret: "<Client_Secret>",
+    callbackURL: "<Callback_URL>"
 },(accessToken, refreshToken, profile, done) => {
     // save user profile info or store it in a db
     return done(/*error*/null, /*data*/profile);
