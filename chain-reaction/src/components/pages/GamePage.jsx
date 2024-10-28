@@ -1,151 +1,329 @@
-import React, { useState, useEffect } from "react";
-
-// const rows = 6;
-// const cols = 12;
-
-// const createGrid = () => {
-//     return Array(rows).fill(null).map(() =>
-//         Array(cols).fill({ orbs: 0, owner: null })
-//     );
-// }
-
-// const GameGrid = () => {
-//     const [grid, setGrid] = useState(createGrid());
-//     const [currentPlayer, setCurrentPlayer] = useState(1);
-
-//     const getCellCapacity = (row, col) => {
-//         if ((row === 0 || row === rows - 1) && (col === 0 || col === cols - 1)) {
-//             return 1; // corner cells
-//         }
-//         if (row === 0 || row === rows - 1 || col === 0 || col === cols - 1) {
-//             return 2; // edge cells
-//         }
-//         return 3; // inner cells
-//     };
-
-//     const handleCellClick = (row, col) => {
-//         const newGrid = grid.map((r, i) =>
-//             r.map((cell, j) => {
-//                 if (i === row && j === col) {
-//                     if (cell.owner === null || cell.owner === currentPlayer) {
-//                         return { orbs: cell.orbs + 1, owner: currentPlayer };
-//                     }
-//                 }
-//                 return cell;
-//             })
-//         );
-
-//         setGrid(newGrid);
-//         checkForExplosions(row, col, currentPlayer, newGrid);
-//         setCurrentPlayer(currentPlayer === 1 ? 2 : 1); // Alternate turn
-//     };
-
-//     const checkForExplosions = (row, col, player, newGrid) => {
-//         const queue = [[row, col]];
-
-//         while (queue.length > 0) {
-//             const [currentRow, currentCol] = queue.shift();
-//             const cell = newGrid[currentRow][currentCol];
-//             const capacity = getCellCapacity(currentRow, currentCol);
-
-//             if (cell.orbs > capacity) {
-//                 newGrid[currentRow][currentCol] = { orbs: 0, owner: null };
-//                 distributeOrbs(currentRow, currentCol, player, newGrid, queue);
-//             }
-//         }
-//         setGrid([...newGrid]); // Update grid after explosions
-//     };
-
-//     const distributeOrbs = (row, col, player, newGrid, queue) => {
-//         const neighbors = [
-//             [row - 1, col],
-//             [row + 1, col],
-//             [row, col - 1],
-//             [row, col + 1],
-//         ];
-
-//         neighbors.forEach(([r, c]) => {
-//             if (r >= 0 && r < rows && c >= 0 && c < cols) {
-//                 newGrid[r][c] = {
-//                     orbs: newGrid[r][c].orbs + 1,
-//                     owner: player,
-//                 };
-
-//                 if (newGrid[r][c].orbs > getCellCapacity(r, c)) {
-//                     queue.push([r, c]); // Add to explosion queue
-//                 }
-//             }
-//         });
-//     };
-
-//     return (
-//         <div>
-//             <h2 className="text-center text-2xl font-bold mb-4">
-//                 Player {currentPlayer}'s Turn
-//             </h2>
-//             <div className="grid grid-cols-12 gap-2 p-4">
-//                 {grid.map((row, rowIndex) =>
-//                     row.map((cell, colIndex) => (
-//                         <div
-//                             key={`${rowIndex}-${colIndex}`}
-//                             onClick={() => handleCellClick(rowIndex, colIndex)}
-//                             className={`border-2 rounded-lg w-12 h-12 flex items-center justify-center 
-//                             ${cell.owner === 1 ? "bg-red-500" : cell.owner === 2 ? "bg-blue-500" : "bg-gray-200"}`}
-//                         >
-//                             {cell.orbs}
-//                         </div>
-//                     ))
-//                 )}
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default GameGrid;
+import React, { useState, memo } from "react";
+import OneOrb from "../gameComponents/OneOrb";
+import TwoOrbs from "../gameComponents/TwoOrbs";
+import ThreeOrbs from "../gameComponents/ThreeOrbs";
+import "../gameComponents/SampleOrb.css";
+import XplosionOrb from "../gameComponents/XplosionOrb";
 
 
-
+// store all the states (data) of the game in a gameState variable.. and save it in redis
+// to continue the game from where it was left off
 
 const rows = 12;
-const cols = 6;
+const cols= 6;
 
+//get number of players and their user-names from user through main component
 
-function Game(){
+// for now lets assume these are the details of 4 players
+const players = [
+    {
+        index: 0,
+        name: "player1",
+        color: "#00FF40",
+        score: 0,
+        lost: false,
+        hasPlayed: false,
+    },
+    {
+        index: 1,
+        name: "player2",
+        color: "#2058FF",
+        score: 0,
+        lost: false,
+        hasPlayed: false,
+    },
+    {
+        index: 2,
+        name: "player3",
+        color: "#ff0000",
+        score: 0,
+        lost: false,
+    },
+    {
+        index: 3,
+        name: "player4",
+        color: "#ffff00",
+        score: 0,
+        lost: false,
+    },
+];
+const playerHasPlayed = Array.from({length: players.length}, () => false);
+let isGameOver = false;
+
+function GamePage(){
+    const [currentPlayerIndex, setcurrentPlayerIndex] = useState(0);
     const [grid, setGrid] = useState(() => 
         Array.from({length: rows}, () => {
-            return Array.from({length: cols}, () => ({orbs: 0}))
+            return Array.from({length: cols}, () => ({orbs: 0, owner: null, explode: false}));
         })
-    )
+    );
 
-    function handleClick(row, col){
-        console.log(row, col)
-        const newGrid = grid.map((r, rowIndex) => {
-            return r.map((cell, colIndex) => {
-                if(rowIndex === row && colIndex === col){
-                    return { ...cell, orbs: cell.orbs + 1};
-                }
-                return cell;
-            })
+    const Cell = memo(({ rowIndex, colIndex, cell, currentPlayerIndex, players, handleCellClick }) => {
+        const renderOrbs = (numberOfOrbs, ownerIndex) => {
+            switch (numberOfOrbs) {
+                case 1:
+                    return <OneOrb color={players[ownerIndex]?.color} />;
+                case 2:
+                    return <TwoOrbs color={players[ownerIndex]?.color} />;
+                case 3:
+                    return <ThreeOrbs color={players[ownerIndex]?.color} />;
+                default:
+                    return null;
+            }
+        };
+
+        return (
+            <div
+                key={`${rowIndex}-${colIndex}`}
+                className="border p-1 text-center bg-black w-16 h-16 flex items-center justify-center relative"
+                style={{
+                    cursor: ((currentPlayerIndex === cell.owner) || cell.owner === null) && "pointer",
+                    borderColor: players[currentPlayerIndex]?.color,
+                }}
+                onClick={() => handleCellClick(rowIndex, colIndex)}
+            >
+                {/* {cell.explode && renderXplosionOrbs(rowIndex, colIndex)} */}
+                {renderOrbs(cell.orbs, cell.owner)} {/* Render the orb component */}
+            </div>
+        );
+    });
+
+
+    // cleanup this mess craphead
+        // function renderXplosionOrbs(rowIndex, colIndex){
+        //     let ownerIndex = currentPlayerIndex;
+        //     while(players[ownerIndex].lost){
+        //         ownerIndex = ownerIndex === 0 ? players.length - 1 : ownerIndex--;
+        //     }
+            
+        //     ownerIndex = ownerIndex === 0 ? players.length-1 : ownerIndex-1;
+        //     const capacity = getCellCapacity(rowIndex, colIndex);
+            
+        //     const explosionOrbs = [];
+        //     for (let i = 0; i < capacity; i++) {
+        //         explosionOrbs.push(<XplosionOrb key={`explosion-${i}`} className="explosion-orb" />);
+        //     }
+            
+        //     const ToLeftOrb = <XplosionOrb destination="left" color={`${players[ownerIndex].color}`} />
+        //     const ToRightOrb = <XplosionOrb destination="right" color={`${players[ownerIndex].color}`} />
+        //     const ToUpOrb = <XplosionOrb destination="up" color={`${players[ownerIndex].color}`} />
+        //     const ToDownOrb = <XplosionOrb destination="down" color={`${players[ownerIndex].color}`} />
+
+        //     const xplosionOrbs = [];
+
+        //     if(rowIndex < rows-1) xplosionOrbs.push(ToDownOrb);
+        //     if(rowIndex > 0) xplosionOrbs.push(ToUpOrb);
+        //     if(colIndex < cols-1) xplosionOrbs.push(ToRightOrb);
+        //     if(colIndex > 0) xplosionOrbs.push(ToLeftOrb);
+
+        //     setTimeout(() => stopXplosion(rowIndex, colIndex), 1000)
+
+        //     return xplosionOrbs
+        // }
+
+        // function stopXplosion(row, col){
+        //     setGrid(prev => {
+        //         return prev.map((r, rowIndex) => {
+        //             return r.map((cell, colIndex) => {
+        //                 return {...cell, explode: false}
+        //             })
+        //         })
+        //     })
+        // }
+
+    async function handleCellClick(row, col) {
+        if ((grid[row][col].owner === null || grid[row][col].owner === currentPlayerIndex) && !isGameOver) {
+            let newGrid = grid.map((cellRow, rowIndex) => {
+                return cellRow.map((cell, colIndex) => {
+                    if (colIndex === col && rowIndex === row) {
+                        return {
+                            ...cell,
+                            orbs: cell.orbs + 1,
+                            owner: currentPlayerIndex
+                        };
+                    }
+                    return cell;
+                });
+            });
+        
+            // Process explosions and wait until all are complete
+            newGrid = await checkForExplosion(newGrid, row, col);
+            setGrid(newGrid);
+
+            // pass newGrid instead of grid as useState betrayed me
+            checkIfPlayerLost(newGrid);
+            playerHasPlayed[currentPlayerIndex] = true;
+
+            if (!isGameOver) {
+                switchPlayers();
+            }
+        }
+    }
+
+    async function switchPlayers(){
+        //switch to teh next player who hasn't lost yet
+        setcurrentPlayerIndex((prev) => {
+            let nextPlayerIndex = (prev + 1) % players.length;
+            while (players[nextPlayerIndex].lost) {
+                // playess..? i mean PLAYERS index start from 0 end at 6
+                // 1 % 7 = 1 | 2 % 7 = 2 ... 7 % 7(players.length) = 0
+                nextPlayerIndex = (nextPlayerIndex + 1) % players.length;
+            }
+            return nextPlayerIndex;
+        });
+    }
+
+    function isValidCell(row, col){
+        return row >= 0 && row < rows && col >= 0 && col < cols;
+    }
+
+    function getCellCapacity(row, col){
+        if((row === rows-1 || row === 0) && (col === cols-1 || col === 0)){
+            return 2; // corner cells
+        } else if ((row === 0 || row === rows-1 || col === 0 || col === cols-1)){
+            return 3; // edge cells
+        } else {
+            return 4; // inside cells
+        }
+    }
+
+    function checkIfPlayerLost(tempGrid){
+        tempGrid = tempGrid === undefined ? grid : tempGrid;
+        console.log("checking");
+        // waaaaaaaaaaaaaaaaaaaa i am dumb
+        players.forEach((player) => {
+            let playerHasOrbs = tempGrid.some(r => r.some(cell => 
+                cell.owner === player.index && cell.orbs > 0
+            ))
+
+            if(!playerHasOrbs && playerHasPlayed[player.index]){
+                console.log(playerHasPlayed, player.lost)
+                player.lost = true;
+            }
         })
-        setGrid(newGrid);
+
+        //get the numbers of players alive
+        let numOfPlayersAlive = players.filter(player => !player.lost);
+
+        // if number of players alive is 1.. then game over
+        if(numOfPlayersAlive.length === 1){
+            gameOver();
+        }
+    }
+
+    function gameOver(){
+        let winnerIndex = players.filter(player => player.lost === false)[0].index;
+        console.log(players[winnerIndex]);
+        isGameOver = true; // mata ashitad
+    }
+
+    async function wait(ms){
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function checkForExplosion(tempGrid, startRow, startCol) {
+        const queue = [{ row: startRow, col: startCol }];
+        const visited = new Set();
+        
+        // xplosion logic..
+        // i wasted my entire time on this crap
+        // 2+ days T-T
+        while (queue.length > 0) {
+            let currentLayer = [...queue];
+            queue.length = 0;  // Reset for next layer
+            
+            for (const { row, col } of currentLayer) {
+                const cellKey = `${row}-${col}`;
+                if (visited.has(cellKey)) continue;
+                visited.add(cellKey);
+    
+                const cell = tempGrid[row][col];
+                const capacity = getCellCapacity(row, col);
+    
+                if (cell.orbs >= capacity) {
+                    tempGrid = explodeCell(tempGrid, row, col, visited);
+                    
+                    // je deteste les voisins
+                    const neighbors = [
+                        { row: row - 1, col },
+                        { row: row + 1, col },
+                        { row, col: col + 1 },
+                        { row, col: col - 1 },
+                    ];
+    
+                    neighbors.forEach((neighbor) => {
+                        if (isValidCell(neighbor.row, neighbor.col)) {
+                            queue.push(neighbor);  // Add neighbors to the queue for the next layer
+                        }
+                    });
+                }
+            }
+            // ye kya logic use kiya hai maine.. 
+            // mereko sachi mai rona a raha hai ahhhhhuhhhhhhhhhh
+            setGrid(tempGrid);  // Update grid state for each layer
+            await wait(100);    // Pause between each layer
+        }
+    
+        return tempGrid;
+    }
+    
+    function explodeCell(tempGrid, row, col, visited) {
+        let newGrid = tempGrid.map((r) => r.map((c) => ({ ...c })));  // Deep copy
+        // yahape bhi copy karne ke din aagaye XD
+
+        newGrid[row][col] = {
+            orbs: 0,
+            owner: null,
+            explode: true,
+        };
+    
+        const neighbors = [
+            { row: row - 1, col, position: "up" },
+            { row: row + 1, col, position: "down" },
+            { row, col: col + 1, position: "right" },
+            { row, col: col - 1, position: "left" },
+        ];
+    
+        neighbors.forEach((neighbor) => {
+            if (isValidCell(neighbor.row, neighbor.col)) {
+                // whyyyyyyyyyy doesnt states work T-T
+                newGrid[neighbor.row][neighbor.col].orbs += 1;
+                newGrid[neighbor.row][neighbor.col].owner = currentPlayerIndex;
+                visited.delete(`${neighbor.row}-${neighbor.col}`);
+            }
+        });
+    
+        return newGrid;
     }
 
     return (
-        <div className="grid grid-cols-6 mx-auto" style={{maxWidth: "380px"}}>
-            {grid.map((row, rowIndex) => (
-                row.map((cell, colIndex) => (
-                    <div
-                        key = {`${rowIndex}-${colIndex}`}
-                        className = "border p-4 text-center bg-gray-100 w-16 h-16"
-                        onClick={() => handleClick(rowIndex, colIndex)}
-                        style={{cursor: "pointer"}} 
-                    >
-                        {cell.orbs}
-                    </div>
-                ))
-            ))}
+        <div className="text-center">
+            <h2>{players[currentPlayerIndex].name}</h2>
+            <br />
+            <div className="grid grid-cols-6 mx-auto" style={{ maxWidth: "380px" }}>
+                {grid.map((row, rowIndex) => {
+                    return row.map((cell, colIndex) => {
+                        {/* idh easy irbeku thane.. nan advance css 😭 kalibekagithu*/}
+                        return (
+                            // how the heck do u add default orbs T-T
+                            // i give up
+                            // https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ_51EOe1HpmkPggkQTaQamn5IJXHGEH7kB-aGJK2PyUjX9_Pl
+                            <Cell
+                                key={`${rowIndex}-${colIndex}`}
+                                rowIndex={rowIndex}
+                                colIndex={colIndex}
+                                cell={cell}
+                                currentPlayerIndex={currentPlayerIndex}
+                                players={players}
+                                handleCellClick={handleCellClick}
+                            />
+                        );
+                    });
+                })}
+            </div>
         </div>
-    )
+    );
 }
 
-export default Game;
+export default GamePage;
+

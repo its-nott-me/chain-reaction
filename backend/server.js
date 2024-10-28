@@ -9,11 +9,17 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import RedisStore from "connect-redis";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+
+dotenv.config();
 
 //setup redis client
 const redisClient = createClient();
 await redisClient.connect(); // connect to redis
 
+const port = process.env.PORT || 5000;
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -23,7 +29,7 @@ const io = new Server(server, {
         credentials: true,
     }
 });
-const port = 5000;
+
 const client = createClient();
 
 // -- Middlewares --
@@ -59,9 +65,9 @@ function isAuthenticated(req, res, next){
 
 // passport strategy setup
 passport.use(new GoogleStrategy({
-    clientID: "<Client_ID>",
-    clientSecret: "<Client_Secret>",
-    callbackURL: "<Callback_URL>"
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "http://localhost:5000/auth/google/callback"
 },(accessToken, refreshToken, profile, done) => {
     // save user profile info or store it in a db
     return done(/*error*/null, /*data*/profile);
@@ -91,6 +97,15 @@ client.set("greeting", "Hello from Redis", (err, reply) => {
 });
 
 
+// MongoDB connect
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log("Connected to MongoDB"))
+.catch((err) => console.error("MongoDB connection error: ", err))
+
+
 // -- Socket Congfigs --
 instrument(io, {
     auth: false,
@@ -109,7 +124,7 @@ io.on("connection", (socket) => {
 // -- Express Configs --
 // Retrieve the value from Redis
 app.get("/", (req, res) => {
-    res.send("Welcome to chian reaction");
+    res.send("Welcome to chain reaction");
 });
 
 // app.get("/greeting", async (req, res) => {
@@ -152,7 +167,19 @@ app.get("/profile", (req, res) => {
     }
 })
 
-
+//check if authenticated
+app.get("/auth/check", (req, res) => {
+    try{
+        if(req.isAuthenticated()){
+            res.status(200).send({authenticated: true});
+        } else {
+            res.status(401).send({authenticated: false});
+        }
+    } catch (err){
+        // why would you even get an error here?? -_-
+        console.log("error chekcing authentication");
+    }
+});
 
 
 //logout route
