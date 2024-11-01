@@ -1,9 +1,9 @@
 import React, { useState, memo } from "react";
-import OneOrb from "../gameComponents/OneOrb";
-import TwoOrbs from "../gameComponents/TwoOrbs";
-import ThreeOrbs from "../gameComponents/ThreeOrbs";
-import "../gameComponents/SampleOrb.css";
-import XplosionOrb from "../gameComponents/XplosionOrb";
+import OneOrb from "../gameComponents/orbs/OneOrb";
+import TwoOrbs from "../gameComponents/orbs/TwoOrbs";
+import ThreeOrbs from "../gameComponents/orbs/ThreeOrbs";
+import "../gameComponents/orbs/SampleOrb.css";
+import XplosionOrb from "../gameComponents/orbs/XplosionOrb";
 
 
 // store all the states (data) of the game in a gameState variable.. and save it in redis
@@ -50,7 +50,7 @@ const players = [
 const playerHasPlayed = Array.from({length: players.length}, () => false);
 let isGameOver = false;
 
-function GamePage(){
+function GameGrid(){
     const [currentPlayerIndex, setcurrentPlayerIndex] = useState(0);
     const [grid, setGrid] = useState(() => 
         Array.from({length: rows}, () => {
@@ -377,4 +377,4 @@ function GamePage(){
     );
 }
 
-export default GamePage;
+export default GameGrid;

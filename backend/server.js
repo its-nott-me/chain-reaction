@@ -1,5 +1,5 @@
 import express from "express";
-import { createClient } from "redis";
+// import { createClient } from "redis";
 import { instrument } from "@socket.io/admin-ui";
 import { Server } from "socket.io";
 import http from "http";
@@ -8,16 +8,20 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
 import session from "express-session";
-import RedisStore from "connect-redis";
+// import RedisStore from "connect-redis";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import MongoStore from "connect-mongo";
+import User from "./database/models/user.js";
+import GameState from "./database/models/gameState.js"
+import user from "./database/models/user.js";
 
 
 dotenv.config();
 
 //setup redis client
-const redisClient = createClient();
-await redisClient.connect(); // connect to redis
+// const redisClient = createClient();
+// await redisClient.connect(); // connect to redis
 
 const port = process.env.PORT || 5000;
 const app = express();
@@ -30,7 +34,7 @@ const io = new Server(server, {
     }
 });
 
-const client = createClient();
+// const client = createClient();
 
 // -- Middlewares --
 app.use(cors());
@@ -40,7 +44,7 @@ app.use(cookieParser());
 
 // session setup
 app.use(session({
-    store: new RedisStore({ client: redisClient }),
+    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     secret: "reactionInReact",
     resave: false,
     saveUninitialized: false,
@@ -84,23 +88,22 @@ passport.deserializeUser((user, done) => {
 
 // -- Redis configs --
 // Connect to Redis
-await client.connect();
-console.log("Connected to Redis...");
-client.on("error", (err) => console.log("Redis Client Error", err));
+// await client.connect();
+// console.log("Connected to Redis...");
+// client.on("error", (err) => console.log("Redis Client Error", err));
 
-// Set a value in Redis
-client.set("greeting", "Hello from Redis", (err, reply) => {
-    if (err) {
-        console.log(err);
-    }
-    console.log("Redis SET reply:", reply);
-});
+// // Set a value in Redis
+// client.set("greeting", "Hello from Redis", (err, reply) => {
+//     if (err) {
+//         console.log(err);
+//     }
+//     console.log("Redis SET reply:", reply);
+// });
 
 
 // MongoDB connect
 mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    tlsAllowInvalidCertificates: true,
 })
 .then(() => console.log("Connected to MongoDB"))
 .catch((err) => console.error("MongoDB connection error: ", err))
@@ -122,11 +125,12 @@ io.on("connection", (socket) => {
 
 
 // -- Express Configs --
-// Retrieve the value from Redis
 app.get("/", (req, res) => {
     res.send("Welcome to chain reaction");
 });
 
+
+// Retrieve the value from Redis
 // app.get("/greeting", async (req, res) => {
 //     const greeting = await client.get("greeting");
 //     res.send(greeting);
@@ -149,12 +153,39 @@ app.get("/auth/google", (req, res, next) => {
 
 // handling success and failed login 
 app.get("/auth/google/callback", 
-    passport.authenticate("google", {failureRedirect: "/login"}),
-    (req, res) => {
-        console.log("user info: ", req.user);
-        res.redirect("/profile"); // redirect on success
+    passport.authenticate("google", { failureRedirect: "/login" }),
+    async (req, res) => {
+        try {
+            // Extract user data from the Google OAuth response
+            const userData = {
+                oauthProvider: 'google',
+                googleId: req.user.id, // From Google OAuth response
+                username: req.user.displayName, // From Google OAuth response
+                email: req.user.emails[0].value, // From Google OAuth response
+                profilePicture: req.user.photos[0].value, // From Google OAuth response
+            };
+
+            // Check if the user already exists in the database
+            const existingUser = await User.findOne({ googleId: userData.googleId });
+
+            if (!existingUser) {
+                // If the user does not exist, create a new user
+                const newUser = new User(userData);
+                await newUser.save(); // Save the new user to the database
+                console.log('New user created:', newUser);
+            } else {
+                // User already exists, you can handle this case if needed
+                console.log('User already exists:', existingUser);
+            }
+
+            // User is authenticated, redirect to the profile page
+            res.redirect("/profile"); // Redirect on success
+        } catch (error) {
+            console.error('Error during Google OAuth callback:', error);
+            res.redirect("/login"); // Redirect to login on error
+        }
     }
-)
+);
 
 //route to check session
 app.get("/profile", (req, res) => {
@@ -170,47 +201,179 @@ app.get("/profile", (req, res) => {
 //check if authenticated
 app.get("/auth/check", (req, res) => {
     try{
-        if(req.isAuthenticated()){
-            res.status(200).send({authenticated: true});
-        } else {
-            res.status(401).send({authenticated: false});
-        }
+        res.send(req.isAuthenticated());
     } catch (err){
         // why would you even get an error here?? -_-
-        console.log("error chekcing authentication");
+        console.log("error checking authentication");
     }
 });
 
+// send currently logged-in user data
+app.get("/getUserData", (req, res) => {
+    if(req.isAuthenticated()){
+        res.send(req.user);
+    } else {
+        res.status(401).send("not authenticated");
+    }
+})
+
 
 //logout route
-app.get("/logout", (req, res, next) => {
+app.get("/logout", (req, res) => {
     req.logout((err) => {
-        if(err){
+        if (err) {
             console.error("Error during logout: ", err);
-            return res.status(500).json({message: "error during logou8t"});
+            return res.status(500).json({ message: "Error during logout" });
         }
-        req.session.destroy();
-        res.clearCookie('connect.sid', {path: "/"});
 
-        redisClient.del(`sess:${req.sessionID}`, (err) => {
+        // Destroy session stored in MongoDB
+        req.session.destroy((err) => {
             if (err) {
-                console.error("Error deleting sesssion from redis: ", err);
-                return next(err);
+                console.error("Error destroying session: ", err);
+                return res.status(500).json({ message: "Error destroying session" });
             }
 
-            console.log("deleting session from redis");
+            // Clear session cookie
             res.clearCookie("connect.sid", {
                 path: "/",
-                secure: "false"
-            })
-            console.log("Session destroyed");
-        })
+                secure: false // Use true if serving over HTTPS
+            });
 
-        res.status(200).send("Logged out successfully");
+            console.log("Session destroyed and user logged out");
+            res.status(200).send("Logged out successfully");
+        });
     });
 });
 
 
+async function saveGameState(googleId, gameData) {
+    try {
+        // Find the user by googleId, not _id
+        const user = await User.findOne({ googleId });
+        if (!user) throw new Error("User not found");
+        
+        let gameState = await GameState.findOne({user: user._id, slotIndex: gameData.slotIndex})
+        // Create and save the game state
+        if(gameState){
+            // updating xisiting gaemstate
+            Object.assign(gameState, gameData);
+            await gameState.save();
+            
+        } else {
+            gameState = new GameState({
+                ...gameData,
+                user: user._id,
+            });
+            await gameState.save();
+
+            // Update the user by googleId to add the gameState
+            await User.findOneAndUpdate(
+                { googleId: googleId },
+                { $push: { gameStates: gameState._id } }
+            );
+        }
+
+        console.log("Game state saved successfully");
+    } catch (err) {
+        console.error("Error saving game state:", err);
+    }
+}
+// save game endpoint
+app.post("/saveGame", (req, res) => {
+    const googleId = req.user._json.sub; // Use sub to get Google ID
+    // console.log(req.body.gameData);
+    saveGameState(googleId, req.body.gameData)
+        .then(() => res.sendStatus(200))
+        .catch(() => res.sendStatus(500));
+});
+
+
+
+async function retrieveSavesAbstract(email) {
+    try {
+        const user = await User.findOne({ email });
+        if (!user || user.gameStates.length === 0) {
+            return [];
+        }
+
+        // Retrieve all game states in parallel
+        const saves = await Promise.all(
+            user.gameStates.map(async (id) => {
+                const save = await GameState.findOne({ _id: id, user: user._id }).select("slotIndex slotName").exec();
+                return save;
+            })
+        );
+
+        return saves;
+    } catch (error) {
+        console.error("Error retrieving saves:", error);
+        return [];
+    }
+}
+async function retrieveSaves(email) {
+    try {
+        const user = await User.findOne({ email });
+        if (!user || user.gameStates.length === 0) {
+            return [];
+        }
+
+        // Retrieve all game states in parallel
+        const saves = await Promise.all(
+            user.gameStates.map(async (id) => {
+                const save = await GameState.findOne({ _id: id, user: user._id });
+                return save;
+            })
+        );
+
+        return saves;
+    } catch (error) {
+        console.error("Error retrieving saves:", error);
+        return [];
+    }
+}
+// Retrieve saves endpoint
+app.get("/retrieveSaves/abstract", async (req, res) => {
+    const email = req.user._json.email;
+    try {
+        const saves = await retrieveSavesAbstract(email);
+        console.log(saves);
+        res.send(saves).status(200); 
+    } catch (error) {
+        console.error("Error in retreiving abstract of saves: ", error);
+        res.sendStatus(500);
+    }
+});
+app.get("/retrieveSaves", async (req, res) => {
+    const email = req.user?._json.email;
+    try {
+        const saves = await retrieveSaves(email);
+        console.log(saves);
+        res.send(saves).status(200); 
+    } catch (error) {
+        console.error("Error in retreiving abstract of saves: ", error);
+        res.sendStatus(500);
+    }
+});
+
+
+app.post("/renameSave", async (req, res) => {
+    const email = req.user._json.email;
+    const { slotIndex, newName } = req.body; // Use slotIndex from request
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).send("User not found.");
+        
+        // Search for the game state with matching slotIndex
+        const gameStateId = await GameState.findOneAndUpdate({user: user._id, slotIndex}, {slotName: newName})
+        if (!gameStateId) return res.status(404).send("Game state not found in this slot.");
+
+        res.sendStatus(200);
+    } catch (err) {
+        console.error("Error renaming slot: ", err);
+        res.sendStatus(500);
+    }
+});
 
 
 // -- Global error handler --

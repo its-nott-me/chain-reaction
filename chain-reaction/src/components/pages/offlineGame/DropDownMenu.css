@@ -1,0 +1,17 @@
+.dropdown-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dropdown-menu {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.selected-option {
+  margin-top: 10px;
+  font-weight: bold;
+}

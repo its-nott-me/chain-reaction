@@ -4,10 +4,10 @@ import OAuthButton from "../OAuthButton";
 import LogoutButton from "../LogoutButton";
 import Game from "./GamePage";
 import axios from "axios";
-import OneOrb from "../gameComponents/OneOrb";
-import TwoOrbs from "../gameComponents/TwoOrbs";
-import ThreeOrbs from "../gameComponents/ThreeOrbs";
-import SampleOrb from "../gameComponents/SampleOrb";
+import OneOrb from "../gameComponents/orbs/OneOrb";
+import TwoOrbs from "../gameComponents/orbs/TwoOrbs";
+import ThreeOrbs from "../gameComponents/orbs/ThreeOrbs";
+import SampleOrb from "../gameComponents/orbs/SampleOrb";
 import GameGrid from "./GameGrid";
 import GamePage from "./GamePage";
 
@@ -19,8 +19,6 @@ function HomePage(){
     }
 
     checkIfAuthenticated();
-
-    let colors = ["#5cabff", "#ff5733", "#28a745"];
 
     return(
         <>
@@ -41,10 +39,11 @@ function HomePage(){
             </a>
             
 
+            {/* setup the logic of choosing number of players.. etc etc */}
             <br />
-
-            <br />
-            <GamePage />
+            <a href = "/offline">
+                Play offline
+            </a>
 
         </>
     )
