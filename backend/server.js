@@ -82,7 +82,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((user, done) => {
-    done(null ,user);
+    done(null, user);
 });
 
 
@@ -179,7 +179,9 @@ app.get("/auth/google/callback",
             }
 
             // User is authenticated, redirect to the profile page
-            res.redirect("/profile"); // Redirect on success
+            // res.redirect("/profile");
+            
+            res.redirect("http://localhost:3000"); // Redirect on success
         } catch (error) {
             console.error('Error during Google OAuth callback:', error);
             res.redirect("/login"); // Redirect to login on error

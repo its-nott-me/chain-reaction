@@ -235,7 +235,7 @@ import React from 'react';
 import './SampleOrb.css'; // Import the CSS file
 
 const getRandomDuration = () => `${Math.random() * 5 + 3}s`; // Random duration between 3s and 8s
-const getRandomDelay = () => `${Math.random() * 1.5}s`; // Random delay between 0s and 2s
+const getRandomDelay = () => `${Math.random() * 1.7}s`; // Random delay between 0s and 2s
 
 const TwoOrb = ({ color }) => {
     return (
@@ -244,7 +244,7 @@ const TwoOrb = ({ color }) => {
                 className="orb-group"
                 style={{
                     animationDuration: getRandomDuration(),
-                    // animationDelay: getRandomDelay(),
+                    animationDelay: getRandomDelay(),
                 }}
             >
                 <figure

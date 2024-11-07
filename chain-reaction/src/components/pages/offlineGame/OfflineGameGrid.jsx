@@ -2,9 +2,10 @@ import React, { useState, memo, useMemo, useEffect } from "react";
 import OneOrb from "../../gameComponents/orbs/OneOrb";
 import TwoOrbs from "../../gameComponents/orbs/TwoOrbs";
 import ThreeOrbs from "../../gameComponents/orbs/ThreeOrbs";
-import XplosionOrb from "../../gameComponents/orbs/XplosionOrb";
+// import XplosionOrb from "../../gameComponents/orbs/XplosionOrb";
 import SaveGameDialog from "./SaveGameDialog";
-import axios from "axios";
+import Leaderboard from "./LeaderBoard";
+// import axios from "axios";
 
 
 // store all the states (data) of the game in a gameState variable.. and save it in redis
@@ -52,16 +53,30 @@ import axios from "axios";
 function OfflineGameGrid({gridData, authenticated}){
     // constants for rendering game grid and creating players
     const {rows, cols} = useMemo(() => (gridData.gridSize), [gridData.gridSize]);
-    let players = useMemo(() => 
-        gridData.playersState || gridData.playersData.map((player, index) => ({
+    const [players, setPlayers] = useState(() => 
+        gridData.playersState || 
+        gridData.playersData.map((player, index) => ({
             index: index,
             name: player.username,
             color: player.color,
             score: 0,
             lost: false,
-            hasPlayed: false
-        })), [gridData.playersData]
+            hasPlayed: false,
+        }))
     );
+
+    // let players = useMemo(() => 
+    //     gridData.playersState || gridData.playersData.map((player, index) => ({
+    //         index: index,
+    //         name: player.username,
+    //         color: player.color,
+    //         score: 0,
+    //         lost: false,
+    //         hasPlayed: false
+    //     })), [gridData.playersData]
+    // );
+
+    
     let playerHasPlayed = useMemo(() => gridData.playerHasPlayed || Array.from({length: players.length}, () => false), [gridData.playersData]);
     const [isGameOver, setIsGameOver] = useState(false);
     const [currentPlayerIndex, setCurrentPlayerIndex] = useState(gridData.currentPlayerIndex || 0);
@@ -143,8 +158,39 @@ function OfflineGameGrid({gridData, authenticated}){
         //     })
         // }
 
+    function incrementScore(score){
+        // ~~ how dumb can a person be ?? :) ~~
+        
+        // --------------- scoring system: --------------
+        // cpatured an empty cell: 10pts
+        // captured enemy's cell:  15tps
+        // cell explodes:          5pts
+        setPlayers(prevPlayers => 
+            prevPlayers.map(player => 
+                player.index === currentPlayerIndex 
+                ? 
+                    { ...player, score: player.score + score } 
+                : 
+                    player
+            )
+        );
+
+        // players.map(player => 
+        //     player.index === currentPlayerIndex 
+        //     ? 
+        //         { ...player, score: player.score + score } 
+        //     : 
+        //         player
+        // )
+
+        // console.log(players)
+    }
+
     async function handleCellClick(row, col) {
         if ((grid[row][col].owner === null || grid[row][col].owner === currentPlayerIndex) && !isGameOver) {
+
+            grid[row][col].owner === null ? incrementScore(10) : incrementScore(5);
+            
             let newGrid = grid.map((cellRow, rowIndex) => {
                 return cellRow.map((cell, colIndex) => {
                     if (colIndex === col && rowIndex === row) {
@@ -157,7 +203,8 @@ function OfflineGameGrid({gridData, authenticated}){
                     return cell;
                 });
             });
-        
+            
+
             // Process explosions and wait until all are complete
             newGrid = await checkForExplosion(newGrid, row, col);
             setGrid(newGrid);
@@ -183,6 +230,8 @@ function OfflineGameGrid({gridData, authenticated}){
             }
             return nextPlayerIndex;
         });
+
+        // console.log(players);
     }
 
     function isValidCell(row, col){
@@ -201,13 +250,12 @@ function OfflineGameGrid({gridData, authenticated}){
 
     function checkIfPlayerLost(tempGrid){
         tempGrid = tempGrid === undefined ? grid : tempGrid;
-        console.log("checking");
+        // console.log("checking");
         // waaaaaaaaaaaaaaaaaaaa i am dumb
         players.forEach((player) => {
             let playerHasOrbs = tempGrid.some(r => r.some(cell => 
                 cell.owner === player.index && cell.orbs > 0
             ))
-
             if(!playerHasOrbs && playerHasPlayed[player.index]){
                 console.log(playerHasPlayed, player.lost)
                 player.lost = true;
@@ -232,7 +280,6 @@ function OfflineGameGrid({gridData, authenticated}){
     async function checkForExplosion(tempGrid, startRow, startCol) {
         const queue = [{ row: startRow, col: startCol }];
         const visited = new Set();
-        
         // xplosion logic..
         // i wasted alot of my time on this crap
         // 2+ days T-T
@@ -251,7 +298,7 @@ function OfflineGameGrid({gridData, authenticated}){
     
                 if (cell.orbs >= capacity) {
                     tempGrid = explodeCell(tempGrid, row, col, visited);
-                    
+                    incrementScore(5);
                     // je deteste les voisins
                     const neighbors = [
                         { row: row - 1, col },
@@ -270,7 +317,7 @@ function OfflineGameGrid({gridData, authenticated}){
             // ye kya logic use kiya hai maine.. 
             // mereko sachi mai rona a raha hai ahhhhhuhhhhhhhhhh
             setGrid(tempGrid);  // Update grid state for each layer
-            await wait(100);    // Pause between each layer
+            await wait(100);    // Pause between updating each layer
         }
     
         return tempGrid;
@@ -286,15 +333,22 @@ function OfflineGameGrid({gridData, authenticated}){
         };
     
         const neighbors = [
-            { row: row - 1, col, position: "up" },
+            { row: row - 1, col, position: "up" }, 
             { row: row + 1, col, position: "down" },
             { row, col: col + 1, position: "right" },
             { row, col: col - 1, position: "left" },
+            // why positions?? coz u shithead tried something
+            // which clearly didn't work
+            // and u goldfish memory holder forgot to cleanup 🤦‍♂️
         ];
     
         neighbors.forEach((neighbor) => {
             if (isValidCell(neighbor.row, neighbor.col)) {
                 // whyyyyyyyyyy doesnt states work T-T
+
+                // and i return to say the same thing... 
+                // why doesnt states freakin work T-T
+                newGrid[row][col].owner != null ? incrementScore(15) : incrementScore(10);
                 newGrid[neighbor.row][neighbor.col].orbs += 1;
                 newGrid[neighbor.row][neighbor.col].owner = currentPlayerIndex;
                 visited.delete(`${neighbor.row}-${neighbor.col}`);
@@ -305,55 +359,58 @@ function OfflineGameGrid({gridData, authenticated}){
     }
 
     return (
-        <div className="text-center">
-            {!isGameOver ? (
-                    <h2>Current player: {players[currentPlayerIndex]?.name}</h2>
-                ) : (<>
-                    <h2>{`Congrats ${players[currentPlayerIndex].name}`}</h2>
-                    <h1>{`${players.filter(player => player.lost).map(p => p.name)} shame on you` }</h1>
-                </>)}
-            <br />
-            <div 
-                className="grid mx-auto" 
-                style={{  
-                    maxWidth: `${cols * 4}rem`, 
-                    gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` 
-                }}
-            >
-                {grid.map((row, rowIndex) => {
-                    return row.map((cell, colIndex) => {
-                        {/* idh easy irbeku thane.. nan advance css 😭 kalibekagithu*/}
-                        return (
-                            // how the heck do u add default orbs T-T
-                            // i can't.. i give up ✊
-                            // https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ_51EOe1HpmkPggkQTaQamn5IJXHGEH7kB-aGJK2PyUjX9_Pl
-                            <Cell
-                                key={`${rowIndex}-${colIndex}`}
-                                rowIndex={rowIndex}
-                                colIndex={colIndex}
-                                cell={cell}
-                                currentPlayerIndex={currentPlayerIndex}
-                                players={players}
-                                handleCellClick={handleCellClick}
-                            />
-                        );
-                    });
-                })}
+        <>
+            <Leaderboard players={players} gameOver={isGameOver} />
+            <div className="text-center">
+                {!isGameOver ? (
+                        <h2>Current player: {players[currentPlayerIndex]?.name}</h2>
+                    ) : (<>
+                        <h2>{`Congrats ${players[currentPlayerIndex].name}`}</h2>
+                        <h1>{`${players.filter(player => player.lost).map(p => p.name)} shame on you` }</h1>
+                    </>)}
+                <br />
+                <div 
+                    className="grid mx-auto" 
+                    style={{  
+                        maxWidth: `${cols * 4}rem`, 
+                        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` 
+                    }}
+                >
+                    {grid.map((row, rowIndex) => {
+                        return row.map((cell, colIndex) => {
+                            {/* idh easy irbeku thane.. nan advance css 😭 kalibekagithu*/}
+                            return (
+                                // how the heck do u add default orbs T-T
+                                // i can't.. i give up ✊
+                                // https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ_51EOe1HpmkPggkQTaQamn5IJXHGEH7kB-aGJK2PyUjX9_Pl
+                                <Cell
+                                    key={`${rowIndex}-${colIndex}`}
+                                    rowIndex={rowIndex}
+                                    colIndex={colIndex}
+                                    cell={cell}
+                                    currentPlayerIndex={currentPlayerIndex}
+                                    players={players}
+                                    handleCellClick={handleCellClick}
+                                />
+                            );
+                        });
+                    })}
+                </div>
+                < br />
+                {authenticated ? (
+                    <SaveGameDialog 
+                        currentPlayerIndex={currentPlayerIndex}
+                        gridState={grid}
+                        playersState={players}
+                        playerHasPlayed={playerHasPlayed}
+                        gameOver = {isGameOver}
+                        gridSize={{rows, cols}}
+                    />
+                ) : ( 
+                    <p className="error-text">Not logged in.. cannot save game</p>
+                )} 
             </div>
-            < br />
-            {authenticated ? (
-                <SaveGameDialog 
-                    currentPlayerIndex={currentPlayerIndex}
-                    gridState={grid}
-                    playersState={players}
-                    playerHasPlayed={playerHasPlayed}
-                    gameOver = {isGameOver}
-                    gridSize={{rows, cols}}
-                />
-            ) : ( 
-                <p className="error-text">Not logged in.. cannot save game</p>
-            )} 
-        </div>
+        </>
     );
 }
 

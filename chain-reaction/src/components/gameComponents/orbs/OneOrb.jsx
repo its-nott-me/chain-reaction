@@ -130,7 +130,7 @@ const OneOrb = ({ color }) => {
                 className="orb-group"
                 style={{
                     animationDuration: getRandomDuration(),
-                    // animationDelay: getRandomDelay(),
+                    animationDelay: getRandomDelay(),
                 }}
             >
                 <figure className="ball" style={{ 

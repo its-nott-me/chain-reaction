@@ -23,7 +23,6 @@
     width: 22px;
     animation: vibrate 0.5s infinite alternate; /* Apply vibration to each ball */
     position: relative;
-     /* Absolute positioning for better control */
 }
 
 .ball .shadow {

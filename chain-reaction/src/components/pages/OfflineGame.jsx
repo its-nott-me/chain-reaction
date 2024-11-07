@@ -45,7 +45,6 @@ function OfflineGame(){
     function handleStart(){
         setReady(true);
     }
-
     return(
         <div>
             {
@@ -58,7 +57,9 @@ function OfflineGame(){
                         {isAuthenticated && <LoadGameDialog loadGame={loadGame} />}
                     </ div>
                 ) : (
-                    <OfflineGameGrid gridData={gridData} authenticated={isAuthenticated} />
+                    <div>
+                        <OfflineGameGrid gridData={gridData} authenticated={isAuthenticated} />
+                    </div>
                 )
             }
         </ div>
