@@ -45,6 +45,16 @@ function HomePage(){
                 Play offline
             </a>
 
+            <br />
+            <a href = "/register">
+                Register
+            </a>
+
+            <br />
+            <a href = "/login">
+                Login
+            </a>
+
         </>
     )
 }

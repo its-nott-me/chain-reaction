@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from "react";
-import OfflineGameGrid from "./offlineGame/OfflineGameGrid";
-import DropdownMenu from "./offlineGame/DropDown";
-import PlayerSettings from "./offlineGame/PlayerSettings";
-import GridSizeInput from "./offlineGame/GridSizeInput";
+import OfflineGameGrid from "../offlineGame/OfflineGameGrid";
+import DropdownMenu from "../offlineGame/DropDown";
+import PlayerSettings from "../offlineGame/PlayerSettings";
+import GridSizeInput from "../offlineGame/GridSizeInput";
 import axios from "axios";
-import LoadGameDialog from "./offlineGame/LoadGameDialog";
+import LoadGameDialog from "../offlineGame/LoadGameDialog";
 
 // option to save offline matches too
 

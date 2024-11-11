@@ -8,7 +8,7 @@ function LogoutButton(){
     return(
         <>
             <button onClick={handleLogout}>
-                Google logout
+                Logout
             </button>
         </>
     )
