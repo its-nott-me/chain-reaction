@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-    oauthProvider: { type: String, required: true },
+    provider: { type: String, required: true },
     googleId: { type: String, unique: true, sparse: true },
     username: { type: String, required: true },
     email: { type: String, unique: true, required: true },
@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema({
     password: { type: String },
     joinedDate: { type: Date, default: Date.now },
     gameStates: [{ type: mongoose.Schema.Types.ObjectId, ref: 'GameState' }],
+    onlineGameStates: [{
+        id: {type: Number, required: true},
+        ref: {type: mongoose.Schema.Types.ObjectId, ref: "OnlineGameState"},
+    }]
 });
 
 // Compound index on oauthProvider and googleId, allowing multiple null googleId values for "local" providers

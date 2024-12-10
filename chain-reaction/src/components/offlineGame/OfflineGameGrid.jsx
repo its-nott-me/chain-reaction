@@ -77,7 +77,7 @@ function OfflineGameGrid({gridData, authenticated}){
     // );
 
     
-    let playerHasPlayed = useMemo(() => gridData.playerHasPlayed || Array.from({length: players.length}, () => false), [gridData.playersData]);
+    let [playerHasPlayed, setPlayerHasPlayed ]= useState(gridData.playerHasPlayed || Array.from({length: players.length}, () => false));
     const [isGameOver, setIsGameOver] = useState(false);
     const [currentPlayerIndex, setCurrentPlayerIndex] = useState(gridData.currentPlayerIndex || 0);
     const [grid, setGrid] = useState(() => 
@@ -103,7 +103,7 @@ function OfflineGameGrid({gridData, authenticated}){
         return (
             <div
                 key={`${rowIndex}-${colIndex}`}
-                className="border p-1 text-center bg-black w-16 h-16 flex items-center justify-center relative"
+                className="border p-1 text-center bg-gray-900 w-16 h-16 flex items-center justify-center relative transform transition-all duration-300 ease-in-out hover:scale-[1.1] hover:z-10"
                 style={{
                     cursor: ((currentPlayerIndex === cell.owner) || cell.owner === null) && "pointer",
                     borderColor: players[currentPlayerIndex]?.color,
@@ -211,7 +211,12 @@ function OfflineGameGrid({gridData, authenticated}){
 
             // pass newGrid instead of grid as useState betrayed me
             checkIfPlayerLost(newGrid);
-            playerHasPlayed[currentPlayerIndex] = true;
+            setPlayerHasPlayed(prev => {
+                return prev.map((player, index) => {
+                    if(index === currentPlayerIndex){ return true }
+                    return false;
+                })
+            })
 
             if (!isGameOver) {
                 switchPlayers();
@@ -358,60 +363,111 @@ function OfflineGameGrid({gridData, authenticated}){
         return newGrid;
     }
 
+    function handleRestartGame(){
+        setGrid(
+            Array.from({length: rows}, () => {
+                return Array.from({length: cols}, () => ({orbs: 0, owner: null, explode: false}));
+            })
+        )
+
+        setIsGameOver(false);
+
+        setPlayers(prev => (
+            prev.map(player => (
+                {
+                    ...player,
+                    lost: false,
+                    hasPlayed: false,
+                    score: 0,
+                }
+            ))
+        ))
+
+        // important ❗❗❗❗❗ this isnt resetting
+        setPlayerHasPlayed(Array.from({ length: players.length }, () => false));
+
+        setCurrentPlayerIndex(0);
+    }
+
     return (
-        <>
+        <div className="min-h-screen flex flex-col items-center p-6">
+            {/* Leaderboard Section */}
             <Leaderboard players={players} gameOver={isGameOver} />
-            <div className="text-center">
+    
+            {/* Game Status */}
+            <div className="flex flex-col items-center p-4 space-y-6 text-center w-full max-w-3xl">
                 {!isGameOver ? (
-                        <h2>Current player: {players[currentPlayerIndex]?.name}</h2>
-                    ) : (<>
-                        <h2>{`Congrats ${players[currentPlayerIndex].name}`}</h2>
-                        <h1>{`${players.filter(player => player.lost).map(p => p.name)} shame on you` }</h1>
-                    </>)}
-                <br />
-                <div 
-                    className="grid mx-auto" 
-                    style={{  
-                        maxWidth: `${cols * 4}rem`, 
-                        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` 
-                    }}
-                >
-                    {grid.map((row, rowIndex) => {
-                        return row.map((cell, colIndex) => {
-                            {/* idh easy irbeku thane.. nan advance css 😭 kalibekagithu*/}
-                            return (
-                                // how the heck do u add default orbs T-T
-                                // i can't.. i give up ✊
-                                // https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ_51EOe1HpmkPggkQTaQamn5IJXHGEH7kB-aGJK2PyUjX9_Pl
-                                <Cell
-                                    key={`${rowIndex}-${colIndex}`}
-                                    rowIndex={rowIndex}
-                                    colIndex={colIndex}
-                                    cell={cell}
-                                    currentPlayerIndex={currentPlayerIndex}
-                                    players={players}
-                                    handleCellClick={handleCellClick}
-                                />
-                            );
-                        });
-                    })}
-                </div>
-                < br />
+                    <p className="text-xl font-semibold text-teal-500 bg-white px-6 py-3 rounded-lg shadow-md border border-gray-200">
+                        Current player: <span className="text-blue-700">{players[currentPlayerIndex]?.name}</span>
+                    </p>
+                ) : (
+                    <>
+                        <p className="text-2xl font-bold text-green-600 bg-white px-8 py-4 rounded-lg shadow-lg border border-gray-300">
+                            🎉 Congrats <span className="text-purple-700">{players[currentPlayerIndex]?.name}</span>! 🎉
+                        </p>
+                        <p className="text-md font-medium text-red-500 bg-white px-5 py-3 rounded-md shadow-sm border border-gray-200">
+                            🤣 Shame on you {" "}
+                            <span className="text-orange-600">
+                                {players.filter(player => player.lost).map(p => p.name).join(", ")}
+                            </span>
+                        </p>
+                    </>
+                )}
+            </div>
+    
+            {/* Game Grid */}
+            <div
+                className="grid mt-8 p-4 bg-white rounded-lg"
+                style={{
+                    maxWidth: `${cols * 4}rem`,
+                    gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+                }}
+            >
+                {grid.map((row, rowIndex) =>
+                    row.map((cell, colIndex) => (
+                        <Cell
+                            key={`${rowIndex}-${colIndex}`}
+                            rowIndex={rowIndex}
+                            colIndex={colIndex}
+                            cell={cell}
+                            currentPlayerIndex={currentPlayerIndex}
+                            players={players}
+                            handleCellClick={handleCellClick}
+                        />
+                    ))
+                )}
+            </div>
+    
+            {/* Save Game or Error */}
+            <div className="mt-8">
                 {authenticated ? (
-                    <SaveGameDialog 
+                    <SaveGameDialog
                         currentPlayerIndex={currentPlayerIndex}
                         gridState={grid}
                         playersState={players}
                         playerHasPlayed={playerHasPlayed}
-                        gameOver = {isGameOver}
-                        gridSize={{rows, cols}}
+                        gameOver={isGameOver}
+                        gridSize={{ rows, cols }}
                     />
-                ) : ( 
-                    <p className="error-text">Not logged in.. cannot save game</p>
-                )} 
+                ) : (
+                    <p className="text-lg font-semibold text-red-600 bg-white px-4 py-2 rounded-lg shadow-md">
+                        Not logged in.. cannot save game
+                    </p>
+                )}
             </div>
-        </>
+
+            {isGameOver && 
+                <button
+                    onClick={handleRestartGame}
+                    className="bg-red-500 mt-5 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-red-600 hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
+                >
+                    Restart Game
+                </button>
+            }
+
+        </div>
     );
+    
 }
 
 export default OfflineGameGrid;

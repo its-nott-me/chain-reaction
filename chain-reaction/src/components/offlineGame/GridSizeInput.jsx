@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './GridSizeInput.css';
+// import './GridSizeInput.css';
 
 function GridSizeInput({setGridSize}) {
     const [rows, setRows] = useState("12");
@@ -26,63 +26,66 @@ function GridSizeInput({setGridSize}) {
         setIsInvalid(!isValid);
     };
 
-    const renderGrid = () => {
-        const rowCount = parseInt(rows, 10);
-        const columnCount = parseInt(columns, 10);
-        const gridElements = [];
-
-        for (let i = 0; i < rowCount; i++) {
-            const rowElements = [];
-            for (let j = 0; j < columnCount; j++) {
-                rowElements.push(<div key={`${i}-${j}`} className="grid-cell"></div>);
-            }
-            gridElements.push(<div key={i} className="grid-row">{rowElements}</div>);
-        }
-
-        return gridElements;
-    };
-
     return (
-        <div className="grid-size-input-container">
-            <h2>Grid Size Input</h2>
-            <button onClick={() => setIsNotHidden(prev => !prev)}><p style={{fontSize: "14px", color: "grey" }}>click here to preview grid</p></button>
-            <div className="input-fields">
-                <label>
-                    Rows:
-                    <input
-                        type="number"
-                        min="3"
-                        max="20"
-                        value={rows}
-                        onChange={handleRowChange}
-                        onBlur={validateInput}
-                        className="input-field"
-                    />
-                </label>
-                < br />
-                <label>
-                    Columns:
-                    <input
-                        type="number"
-                        min="3"
-                        max="20"
-                        value={columns}
-                        onChange={handleColumnChange}
-                        onBlur={validateInput}
-                        className="input-field"
-                    />
-                </label>
-            </div>
-            {isInvalid && (
-                <p className="error-text">Please enter values between 3 and 20.<br />default size 12x6 will be chosen</p>
-            )}
-            
-            {isNotHidden && (
-                <div className="grid-preview">
-                    {(!isInvalid && rows && columns) ? renderGrid() : <p>No Grid Preview</p>}
+<div className="flex w-auto flex-col items-center p-6 bg-[#E879F9] rounded-lg shadow-lg space-y-4 w-80">
+    <h2 className="text-2xl font-bold text-[#7229E3]">Grid Size Input</h2>
+    <button
+        onClick={() => setIsNotHidden(prev => !prev)}
+        className="text-md font-bold text-[#7229E3] hover:text-yellow-300 transition"
+    >
+        Click here to preview grid
+    </button>
+    <div className="flex flex-col space-y-4">
+        <label className="flex items-center space-x-[33.5px]">
+            <span className="text-[#7229E3] font-bold">Rows:</span>
+            <input
+                type="number"
+                min="3"
+                max="20"
+                value={rows}
+                onChange={handleRowChange}
+                onBlur={validateInput}
+                className="w-16 p-2 text-center border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 scrollbar-thin overflow-y-auto"
+            />
+        </label>
+        <label className="flex items-center space-x-2">
+            <span className="text-[#7229E3] font-bold">Columns:</span>
+            <input
+                type="number"
+                min="3"
+                max="20"
+                value={columns}
+                onChange={handleColumnChange}
+                onBlur={validateInput}
+                className="w-16 p-2 text-center border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
+        </label>
+    </div>
+    {isInvalid && (
+        <p className="text-rose-200 text-xl text-center">
+            Please enter values between 3 and 20.
+            <br />
+            Default size 12x6 will be chosen.
+        </p>
+    )}
+    {isNotHidden && (
+        <div className="mt-4 bg-gray-900 border border-gray-700 rounded-lg p-4">
+            {(!isInvalid && rows && columns) ? (
+                <div className="grid gap-1" style={{ gridTemplateRows: `repeat(${rows}, 1fr)`, gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+                    {Array.from({ length: rows * columns }).map((_, idx) => (
+                        <div
+                            key={idx}
+                            className="w-6 h-6 bg-yellow-500 border border-yellow-700 rounded-md shadow-lg transform transition-transform hover:scale-105"
+                        />
+                    ))}
                 </div>
+            ) : (
+                <p className="text-gray-300">No Grid Preview</p>
             )}
         </div>
+    )}
+</div>
+
     );
 }
 

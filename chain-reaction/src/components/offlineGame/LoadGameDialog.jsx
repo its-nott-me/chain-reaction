@@ -38,7 +38,7 @@ function LoadGameDialog({ loadGame }) {
 
     return (
         <>
-            <button onClick={openLoadDialog} className="bg-green-500 text-white px-4 py-2 rounded-md shadow hover:bg-green-600">
+            <button onClick={openLoadDialog} className="bg-green-500 text-white px-4 py-2 rounded-md shadow hover:bg-[#0eea5e] hover:scale-[1.1] transform transition-all duration-300 ease-in-out">
                 Load Game
             </button>
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { io } from "socket.io-client";
-import Header from "../headers/header";
+import Header from "../headers/Header";
 
 
 function SocketPage(){
