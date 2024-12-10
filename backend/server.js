@@ -15,7 +15,7 @@ import dotenv from "dotenv";
 import MongoStore from "connect-mongo";
 import User from "./database/models/user.js";
 import GameState from "./database/models/gameState.js"
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import RoomCode from "./database/models/roomCode.js";
 import { Message } from "./database/models/message.js";
 import PlayerSetting from "./database/models/playerSetting.js";
