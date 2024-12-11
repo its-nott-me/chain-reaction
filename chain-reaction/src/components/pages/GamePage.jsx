@@ -2,7 +2,6 @@ import React, { useState, memo } from "react";
 import OneOrb from "../gameComponents/orbs/OneOrb";
 import TwoOrbs from "../gameComponents/orbs/TwoOrbs";
 import ThreeOrbs from "../gameComponents/orbs/ThreeOrbs";
-import XplosionOrb from "../gameComponents/orbs/XplosionOrb";
 
 
 // store all the states (data) of the game in a gameState variable.. and save it in redis

@@ -3,7 +3,6 @@ import OneOrb from "../gameComponents/orbs/OneOrb";
 import TwoOrbs from "../gameComponents/orbs/TwoOrbs";
 import ThreeOrbs from "../gameComponents/orbs/ThreeOrbs";
 import "../gameComponents/orbs/SampleOrb.css";
-import XplosionOrb from "../gameComponents/orbs/XplosionOrb";
 
 
 // store all the states (data) of the game in a gameState variable.. and save it in redis
@@ -95,33 +94,6 @@ function GameGrid(){
         );
     });
 
-        function renderXplosionOrbs(rowIndex, colIndex, ownerIndex){
-            if(ownerIndex === null) ownerIndex = currentPlayerIndex - 1;
-            const capacity = getCellCapacity(rowIndex, colIndex);
-            
-            const explosionOrbs = [];
-            for (let i = 0; i < capacity; i++) {
-                explosionOrbs.push(<XplosionOrb key={`explosion-${i}`} className="explosion-orb" />);
-            }
-            
-            const ToLeftOrb = <XplosionOrb destination="left" color={`${players[ownerIndex].color}`} />
-            const ToRightOrb = <XplosionOrb destination="right" color={`${players[ownerIndex].color}`} />
-            const ToUpOrb = <XplosionOrb destination="up" color={`${players[ownerIndex].color}`} />
-            const ToDownOrb = <XplosionOrb destination="down" color={`${players[ownerIndex].color}`} />
-
-            const xplosionOrbs = [];
-
-            if(rowIndex < rows-1) xplosionOrbs.push(ToDownOrb);
-            if(rowIndex > 0) xplosionOrbs.push(ToUpOrb);
-            if(colIndex < cols-1) xplosionOrbs.push(ToRightOrb);
-            if(colIndex > 0) xplosionOrbs.push(ToLeftOrb);
-            setTimeout(() => setIsExploding(prev => {
-                return Array.from({length: rows}, () => {
-                    return Array.from({length: cols}, () => false)
-                })
-            }), 1000)
-            return xplosionOrbs
-        }
 
     async function handleCellClick(row, col){
         //show only the current player to place orbs in their cell or empty cell
