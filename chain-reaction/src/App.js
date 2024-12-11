@@ -4,7 +4,7 @@ import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import SocketPage from './components/pages/SocketPage';
 import Game from './components/pages/Game';
 import OfflineGame from './components/pages/OfflineGame';
-import Register from './components/authComponents/Register.jsx';
+import Register from './components/authComponents/Register';
 import Login from './components/authComponents/Login';
 import CreateOrJoinRoom from './components/pages/CreateOrJoinRoom';
 import WaitingRoom from './components/onlineGame/WaitingRoom';
