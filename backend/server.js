@@ -61,10 +61,10 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         path: "/",
-        secure: false,// false for http and treu for https
+        secure: true,// false for http and treu for https
         maxAge: 24*60*60*1000,
         httpOnly: true,
-        domain: "localhost"
+        domain: ".onrender.com" // "localhost" for development
     },
 }));
 // passport setup
@@ -82,7 +82,7 @@ function isAuthenticated(req, res, next){
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:5000/auth/google/callback"
+    callbackURL: `${process.env.FRONTEND_URL}/auth/google/callback`
 },async (accessToken, refreshToken, profile, done) => {
     // save user profile info or store it in a db
     // try {
