@@ -4,6 +4,7 @@ import { instrument } from "@socket.io/admin-ui";
 import { Server } from "socket.io";
 import http from "http";
 import cors from "cors";
+import path from "path";
 import passport, { Passport } from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy } from "passport-local";
