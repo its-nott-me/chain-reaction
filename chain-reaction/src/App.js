@@ -11,7 +11,7 @@ import WaitingRoom from './components/onlineGame/WaitingRoom';
 import { SocketProvider } from './contexts/SocketContext'; // Import the SocketProvider
 import OnlineGame from './components/pages/OnlineGame';
 import UnauthorizedPage from './components/errorPages/Unauthorised_401';
-import LoggedOutPage from './components/authComponents/loggedOutPage';
+import LoggedOutPage from './components/authComponents/LoggedOutPage';
 import NotFoundPage from './components/errorPages/NotFound_404';
 
 function App() {
