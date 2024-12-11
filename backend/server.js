@@ -36,7 +36,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors:{
-        origin: ["http://localhost:3000", "https://admin.socket.io", "https://front-end-131o.onrender.com"], // allow requests from frontend
+        origin: ["http://localhost:3000", "https://admin.socket.io", process.env.FRONTEND_URL], // allow requests from frontend
         methods:["GET", "POST"],
         credentials: true,
     }
