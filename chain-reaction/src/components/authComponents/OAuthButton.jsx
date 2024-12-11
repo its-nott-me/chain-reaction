@@ -1,8 +1,9 @@
 import React from "react";
 
 function OAuthButton(){
+    const apiURL = process.env.REACT_APP_API_URL;
     function handleLogin(){
-        window.location.href = "http://localhost:5000/auth/google";
+        window.location.href = `${apiURL}/auth/google`;
     };
 
     return (
