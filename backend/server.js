@@ -82,7 +82,7 @@ function isAuthenticated(req, res, next){
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.FRONTEND_URL}/auth/google/callback`
+    callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`
 },async (accessToken, refreshToken, profile, done) => {
     // save user profile info or store it in a db
     // try {
