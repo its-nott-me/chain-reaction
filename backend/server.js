@@ -4,8 +4,6 @@ import { instrument } from "@socket.io/admin-ui";
 import { Server } from "socket.io";
 import http from "http";
 import cors from "cors";
-import path from "path";
-import { fileURLToPath } from 'url';
 import passport, { Passport } from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy } from "passport-local";
@@ -41,8 +39,6 @@ const io = new Server(server, {
         credentials: true,
     }
 });
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // const client = createClient();
 
@@ -51,7 +47,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'build')));
+
 
 // session setup
 app.use(session({
@@ -458,9 +454,6 @@ io.on("connection", (socket) => {
 
 
 // -- Express Configs --
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
 app.get("/", (req, res) => {
     res.send("Welcome to chain reaction");
 });
