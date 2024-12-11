@@ -51,7 +51,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '..', 'chain-reaction', 'build')));
+// app.use(express.static(path.join(__dirname, '..', 'chain-reaction', 'build')));
 
 // session setup
 app.use(session({
@@ -513,7 +513,7 @@ app.get("/auth/google/callback",
             // User is authenticated, redirect to the profile page
             // res.redirect("/profile");
             
-            res.redirect("http://localhost:3000"); // Redirect on success
+            res.redirect(process.env.FRONTEND_URL); // Redirect on success
         } catch (error) {
             console.error('Error during Google OAuth callback:', error);
             res.redirect("/login"); // Redirect to login on error
