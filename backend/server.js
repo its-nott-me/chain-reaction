@@ -4,8 +4,8 @@ import { instrument } from "@socket.io/admin-ui";
 import { Server } from "socket.io";
 import http from "http";
 import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
+// import path from "path";
+// import { fileURLToPath } from "url";
 import passport, { Passport } from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy } from "passport-local";
@@ -36,13 +36,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors:{
-        origin: ["http://localhost:3000", "https://admin.socket.io", process.env.FRONTEND_URL], // allow requests from frontend
+        origin: ["http://localhost:3000", "https://admin.socket.io", `${process.env.FRONTEND_URL}`], // allow requests from frontend
         methods:["GET", "POST"],
         credentials: true,
     }
 });
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 // const client = createClient();
 
@@ -458,9 +458,9 @@ io.on("connection", (socket) => {
 
 
 // -- Express Configs --
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'chain-reaction', 'build', 'index.html'));
-});
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '..', 'chain-reaction', 'build', 'index.html'));
+// });
 app.get("/", (req, res) => {
     res.send("Welcome to chain reaction");
 });
