@@ -6,13 +6,14 @@ function CreateRoomDialog() {
     const socket = useSocket();
     const [roomCode, setRoomCode] = useState("");
     const [user, setUser] = useState(null);
+    const apiURL = process.env.REACT_APP_API_URL;
 
     async function getRoomCode() {
         try {
-            const result = await axios.get("/getUserData");
+            const result = await axios.get(`${apiURL}/getUserData`);
             setUser(result.data);
 
-            const response = await axios.post("/createRoomCode");
+            const response = await axios.post(`${apiURL}/createRoomCode`);
             console.log(response.data);
             setRoomCode(response.data.roomCode);
         } catch (error) {

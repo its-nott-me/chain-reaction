@@ -16,6 +16,7 @@ function OfflineGame(){
     const [gridSize, setGridSize] = useState({rows: 12, cols: 6});
     const [gridData, setGridData] = useState({numberOfPlayers, playersData, gridSize});
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const apiURL = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         setGridData({playersData, gridSize, numberOfPlayers});
@@ -24,7 +25,7 @@ function OfflineGame(){
     useEffect(() => {
         async function fetchAuth(){
             try {
-                const result = await axios.get("/auth/check");
+                const result = await axios.get(`${apiURL}/auth/check`);
                 setIsAuthenticated(result.data === true); // Ensures it’s a boolean
                 console.log("Auth Status from server:", result.data); // Log exact response
             } catch (err) {

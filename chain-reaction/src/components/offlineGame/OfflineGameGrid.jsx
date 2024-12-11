@@ -2,7 +2,6 @@ import React, { useState, memo, useMemo, useEffect } from "react";
 import OneOrb from "../gameComponents/orbs/OneOrb";
 import TwoOrbs from "../gameComponents/orbs/TwoOrbs";
 import ThreeOrbs from "../gameComponents/orbs/ThreeOrbs";
-// import XplosionOrb from "../../gameComponents/orbs/XplosionOrb";
 import SaveGameDialog from "./SaveGameDialog";
 import Leaderboard from "./LeaderBoard";
 // import axios from "axios";
@@ -64,8 +63,6 @@ function OfflineGameGrid({gridData, authenticated}){
             hasPlayed: false,
         }))
     );
-
-    // let players = useMemo(() => 
     //     gridData.playersState || gridData.playersData.map((player, index) => ({
     //         index: index,
     //         name: player.username,

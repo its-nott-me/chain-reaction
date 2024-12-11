@@ -18,6 +18,7 @@ function WaitingRoom() {
     const [canEditInput, setCanEditInput] = useState(false);
     const [showAvatars, setShowAvatars] = useState(false); // To toggle avatar box
     const [selectedAvatar, setSelectedAvatar] = useState("");
+    const apiURL = process.env.REACT_APP_API_URL;
 
     const avatars = [
         "https://cdn-icons-png.flaticon.com/512/1752/1752691.png", // gastly
@@ -64,7 +65,7 @@ function WaitingRoom() {
 
     async function getUser() {
         try{
-            const response = await axios.get("/getUserData");
+            const response = await axios.get(`${apiURL}/getUserData`);
             console.log(response.data);
             setUser(response.data);
         }  catch (error) {
@@ -74,7 +75,7 @@ function WaitingRoom() {
 
     async function getOwner(){
         try{
-            const response = await axios.get(`/getOwnerData/${roomCode}`);
+            const response = await axios.get(`${apiURL}/getOwnerData/${roomCode}`);
         console.log(response.data);
         setOwner(response.data);
         return response.data;
@@ -84,7 +85,7 @@ function WaitingRoom() {
     }
 
     async function getGridSize(){
-        const response = await axios.get(`/waiting/gridSize/${roomCode}`);
+        const response = await axios.get(`${apiURL}/waiting/gridSize/${roomCode}`);
         setGridSize(response.data);
     }
 

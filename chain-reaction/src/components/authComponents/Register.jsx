@@ -10,6 +10,7 @@ function Register() {
     const [showLogin, setShowLogin] = useState(false);
     const [showAvatars, setShowAvatars] = useState(false);
     const [selectedAvatar, setSelectedAvatar] = useState("https://cdn-icons-png.flaticon.com/256/1752/1752776.png");
+    const apiURL = process.env.REACT_APP_API_URL;
 
     const avatars = [
         "https://cdn-icons-png.flaticon.com/512/1752/1752691.png", // gastly
@@ -59,7 +60,7 @@ function Register() {
         setError("");
 
         try {
-            const response = await axios.post("/register", { email, password, username, avatar: selectedAvatar });
+            const response = await axios.post(`${apiURL}/register`, { email, password, username, avatar: selectedAvatar });
             if (response.status === 201) window.location.href = "/login";
         } catch (error) {
             if (error.response && error.response.status === 400) {

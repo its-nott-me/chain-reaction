@@ -15,6 +15,7 @@ function OnlineGame() {
     const [isLostDialogOpen, setIsLostDialogOpen] = useState(false);
     const [isWinDialogOpen, setIsWinDialogOpen] = useState(false);
     const socket = useSocket();
+    const apiURL = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         if (socket) {
@@ -53,7 +54,7 @@ function OnlineGame() {
     };
 
     const handleRestartGame = async () => {
-        const response = await axios.post("/createRoomCode");
+        const response = await axios.post(`${apiURL}/createRoomCode`);
         const waitingRoomCode = response.data.roomCode;
         console.log(waitingRoomCode);
 
@@ -62,7 +63,7 @@ function OnlineGame() {
     };
 
     async function getOnlineGameStateData() {
-        const response = await axios.get(`/online/gameState/${roomId}`);
+        const response = await axios.get(`${apiURL}/online/gameState/${roomId}`);
         console.log(response.data);
         if(!response.data){window.location.href = "/unauthorised";}
         setGridData(response.data);
@@ -70,7 +71,7 @@ function OnlineGame() {
 
     async function getUser() {
         try{
-            const response = await axios.get("/getUserData");
+            const response = await axios.get(`${apiURL}/getUserData`);
             setUser(response.data);
             console.log(response.data);
         } catch (error) {

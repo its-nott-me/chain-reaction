@@ -12,6 +12,7 @@ function ChatSection({ user }) {
     const socket = useSocket();
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([]);
+    const apiURL = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         if (socket) {
@@ -23,7 +24,7 @@ function ChatSection({ user }) {
 
             // Fetch previous messages when component mounts
             axios
-                .get(`/messages/${roomCode}`)
+                .get(`${apiURL}/messages/${roomCode}`)
                 .then((response) => {
                     setMessages(response.data);
                 })

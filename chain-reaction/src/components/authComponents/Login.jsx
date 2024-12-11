@@ -2,17 +2,19 @@ import React, { useState } from "react";
 import axios from "axios";
 import Header from "../headers/Header";
 
+
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(""); // State to hold error message
+    const apiURL = process.env.REACT_APP_API_URL;
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError(""); // Clear any previous error
 
         try {
-            const response = await axios.post("/login", { email, password });
+            const response = await axios.post(`${apiURL}/login`, { email, password });
             if (response.status === 200) window.location.href = "/";
         } catch (error) {
             if (error.response && error.response.status === 401) {
