@@ -133,7 +133,7 @@ function Login() {
                 </div>
                 <div className="mt-2 text-center">
                     <a
-                        href="http://localhost:5000/auth/google"
+                        href={`${process.env.REACT_APP_API_URL}/auth/google`}
                         className="text-indigo-600 font-semibold hover:underline"
                     >
                         Login using Google

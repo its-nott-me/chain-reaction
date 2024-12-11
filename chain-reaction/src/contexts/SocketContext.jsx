@@ -15,7 +15,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     // Initialize the socket only if it hasn't been set yet
     if (!socket) {
-      const newSocket = io('http://localhost:5000'); // Replace with your server URL
+      const newSocket = io(process.env.REACT_APP_API_URL); // Replace with your server URL
       setSocket(newSocket);
 
       // Listen for connection status
