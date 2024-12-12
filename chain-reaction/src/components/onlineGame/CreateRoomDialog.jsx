@@ -17,7 +17,8 @@ function CreateRoomDialog() {
             console.log(response.data);
             setRoomCode(response.data.roomCode);
         } catch (error) {
-            window.location.href = "/unauthorised";
+            console.log(error);
+            // window.location.href = "/unauthorised";
         }
     }
 
