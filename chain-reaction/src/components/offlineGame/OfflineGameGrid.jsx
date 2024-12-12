@@ -63,18 +63,9 @@ function OfflineGameGrid({gridData, authenticated}){
             hasPlayed: false,
         }))
     );
-    //     gridData.playersState || gridData.playersData.map((player, index) => ({
-    //         index: index,
-    //         name: player.username,
-    //         color: player.color,
-    //         score: 0,
-    //         lost: false,
-    //         hasPlayed: false
-    //     })), [gridData.playersData]
-    // );
 
-    
-    let [playerHasPlayed, setPlayerHasPlayed ]= useState(gridData.playerHasPlayed || Array.from({length: players.length}, () => false));
+    const [resetFlag, setResetFlag] = useState(0); // for resetting playerHasPlayed
+    let playerHasPlayed = useMemo(() => gridData.playerHasPlayed || Array.from({length: players.length}, () => false), [gridData.playersData, resetFlag]);
     const [isGameOver, setIsGameOver] = useState(false);
     const [currentPlayerIndex, setCurrentPlayerIndex] = useState(gridData.currentPlayerIndex || 0);
     const [grid, setGrid] = useState(() => 
@@ -157,12 +148,7 @@ function OfflineGameGrid({gridData, authenticated}){
 
             // pass newGrid instead of grid as useState betrayed me
             checkIfPlayerLost(newGrid);
-            setPlayerHasPlayed(prev => {
-                return prev.map((player, index) => {
-                    if(index === currentPlayerIndex){ return true }
-                    return false;
-                })
-            })
+            playerHasPlayed[currentPlayerIndex] = true;
 
             if (!isGameOver) {
                 switchPlayers();
@@ -203,16 +189,18 @@ function OfflineGameGrid({gridData, authenticated}){
         tempGrid = tempGrid === undefined ? grid : tempGrid;
         // console.log("checking");
         // waaaaaaaaaaaaaaaaaaaa i am dumb
+        console.log(tempGrid)
         players.forEach((player) => {
             let playerHasOrbs = tempGrid.some(r => r.some(cell => 
                 cell.owner === player.index && cell.orbs > 0
             ))
-            console.log(player);
+            console.log(player.index ,playerHasOrbs, playerHasPlayed[player.index]);
             if(!playerHasOrbs && playerHasPlayed[player.index]){
                 console.log(playerHasPlayed, player.lost)
                 player.lost = true;
             }
-        })
+        });
+
 
         //get the numbers of players alive
         let numOfPlayersAlive = players.filter(player => !player.lost);
@@ -331,7 +319,8 @@ function OfflineGameGrid({gridData, authenticated}){
         ))
 
         // important ❗❗❗❗❗ this isnt resetting
-        setPlayerHasPlayed(Array.from({ length: players.length }, () => false));
+        // oh now it is..
+        setResetFlag(prev => prev + 1); // Change the flag to trigger a recomputation of playerHasPlayed
 
         setCurrentPlayerIndex(0);
     }
@@ -414,7 +403,6 @@ function OfflineGameGrid({gridData, authenticated}){
 
         </div>
     );
-    
 }
 
 export default OfflineGameGrid;
