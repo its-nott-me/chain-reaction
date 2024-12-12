@@ -75,8 +75,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use((req, res, next) => {
     console.log(req.session); 
+    console.log('Response Headers:', res.getHeaders());
     next();
 });
+
 
 function isAuthenticated(req, res, next){
     if(req.isAuthenticated()){
