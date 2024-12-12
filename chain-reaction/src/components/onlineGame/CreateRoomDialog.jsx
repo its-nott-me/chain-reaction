@@ -10,10 +10,10 @@ function CreateRoomDialog() {
 
     async function getRoomCode() {
         try {
-            const result = await axios.get(`${apiURL}/getUserData`);
+            const result = await axios.get(`${apiURL}/getUserData`, {withCredentials: true});
             setUser(result.data);
 
-            const response = await axios.post(`${apiURL}/createRoomCode`);
+            const response = await axios.post(`${apiURL}/createRoomCode`, null, {withCredentials: true});
             console.log(response.data);
             setRoomCode(response.data.roomCode);
         } catch (error) {
