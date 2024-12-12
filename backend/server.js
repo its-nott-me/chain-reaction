@@ -60,7 +60,7 @@ app.use(cookieParser());
 app.use(session({
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     secret: "reactionInReact",
-    sameStie: "None",
+    sameSite: "None",
     resave: false,
     saveUninitialized: false,
     cookie: {
