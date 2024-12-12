@@ -107,53 +107,10 @@ function OfflineGameGrid({gridData, authenticated}){
                 }}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
             >
-                {/* {cell.explode && renderXplosionOrbs(rowIndex, colIndex)} */}
-                {renderOrbs(cell.orbs, cell.owner)} {/* Render the orb component */}
+                {renderOrbs(cell.orbs, cell.owner)}
             </div>
         );
     });
-
-    // cleanup this mess craphead
-        // function renderXplosionOrbs(rowIndex, colIndex){
-        //     let ownerIndex = currentPlayerIndex;
-        //     while(players[ownerIndex].lost){
-        //         ownerIndex = ownerIndex === 0 ? players.length - 1 : ownerIndex--;
-        //     }
-            
-        //     ownerIndex = ownerIndex === 0 ? players.length-1 : ownerIndex-1;
-        //     const capacity = getCellCapacity(rowIndex, colIndex);
-            
-        //     const explosionOrbs = [];
-        //     for (let i = 0; i < capacity; i++) {
-        //         explosionOrbs.push(<XplosionOrb key={`explosion-${i}`} className="explosion-orb" />);
-        //     }
-            
-        //     const ToLeftOrb = <XplosionOrb destination="left" color={`${players[ownerIndex].color}`} />
-        //     const ToRightOrb = <XplosionOrb destination="right" color={`${players[ownerIndex].color}`} />
-        //     const ToUpOrb = <XplosionOrb destination="up" color={`${players[ownerIndex].color}`} />
-        //     const ToDownOrb = <XplosionOrb destination="down" color={`${players[ownerIndex].color}`} />
-
-        //     const xplosionOrbs = [];
-
-        //     if(rowIndex < rows-1) xplosionOrbs.push(ToDownOrb);
-        //     if(rowIndex > 0) xplosionOrbs.push(ToUpOrb);
-        //     if(colIndex < cols-1) xplosionOrbs.push(ToRightOrb);
-        //     if(colIndex > 0) xplosionOrbs.push(ToLeftOrb);
-
-        //     setTimeout(() => stopXplosion(rowIndex, colIndex), 1000)
-
-        //     return xplosionOrbs
-        // }
-
-        // function stopXplosion(row, col){
-        //     setGrid(prev => {
-        //         return prev.map((r, rowIndex) => {
-        //             return r.map((cell, colIndex) => {
-        //                 return {...cell, explode: false}
-        //             })
-        //         })
-        //     })
-        // }
 
     function incrementScore(score){
         // ~~ how dumb can a person be ?? :) ~~
@@ -172,15 +129,7 @@ function OfflineGameGrid({gridData, authenticated}){
             )
         );
 
-        // players.map(player => 
-        //     player.index === currentPlayerIndex 
-        //     ? 
-        //         { ...player, score: player.score + score } 
-        //     : 
-        //         player
-        // )
-
-        // console.log(players)
+        console.log(players)
     }
 
     async function handleCellClick(row, col) {
@@ -258,6 +207,7 @@ function OfflineGameGrid({gridData, authenticated}){
             let playerHasOrbs = tempGrid.some(r => r.some(cell => 
                 cell.owner === player.index && cell.orbs > 0
             ))
+            console.log(player);
             if(!playerHasOrbs && playerHasPlayed[player.index]){
                 console.log(playerHasPlayed, player.lost)
                 player.lost = true;
