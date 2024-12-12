@@ -56,12 +56,11 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 
 // session setup
-app.set('trust proxy', 1);
 app.use(session({
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     secret: "reactionInReact",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
         path: "/",
         secure: true,// false for http and treu for https
@@ -477,6 +476,8 @@ app.get('/set-cookie', (req, res) => {
         maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
     res.send('Cookie manually set');
+    req.session.user = {id: req.user._id || "abcd"}
+    console.log("session created")
 });
 
 // Retrieve the value from Redis
