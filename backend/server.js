@@ -475,8 +475,8 @@ app.get('/set-cookie', (req, res) => {
         domain: '.onrender.com', // Adjust for your production domain
         maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
-    res.send('Cookie manually set');
     req.session.user = {id: req.user._id || "abcd"}
+    res.send('Cookie manually set');
     console.log("session created")
 });
 
