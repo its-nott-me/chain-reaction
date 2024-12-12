@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import axios from "axios";
 import Header from "../headers/Header";
 
-axios.defaults.withCredentials = true;
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -14,8 +13,7 @@ function Login() {
         setError(""); // Clear any previous error
 
         try {
-            await axios.get(`${apiURL}/set-cookie`);
-            const response = await axios.post(`${apiURL}/login`, { email, password });
+            const response = await axios.post(`${apiURL}/login`, { email, password }, {withCredentials: true});
             if (response.status === 200) window.location.href = "/";
         } catch (error) {
             if (error.response && error.response.status === 401) {
