@@ -50,7 +50,6 @@ const io = new Server(server, {
 app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie'],
 }));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
@@ -64,10 +63,10 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         path: "/",
-        secure: false,// false for http and treu for https
+        secure: true,// false for http and treu for https
         maxAge: 24*60*60*1000,
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "none",
         domain: ".onrender.com" // "localhost" for development
     },
 }));
@@ -485,6 +484,17 @@ app.get("/", (req, res) => {
     res.send("Welcome to chain reaction");
 });
 
+app.get('/set-cookie', (req, res) => {
+    res.cookie('connect.sid', req.sessionID, {
+        path: '/',
+        secure: process.env.NODE_ENV === 'production', // Set to true for HTTPS
+        httpOnly: true,
+        sameSite: 'none', // Ensure cross-site cookies are allowed
+        domain: '.onrender.com', // Adjust for your production domain
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+    res.send('Cookie manually set');
+});
 
 // Retrieve the value from Redis
 // app.get("/greeting", async (req, res) => {
