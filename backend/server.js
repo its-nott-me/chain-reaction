@@ -54,13 +54,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
-// app.use(express.static(path.join(__dirname, '..', 'chain-reaction', 'build')));
 
 // session setup
 app.use(session({
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     secret: "reactionInReact",
-    sameSite: "None",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -68,6 +66,7 @@ app.use(session({
         secure: true,// false for http and treu for https
         maxAge: 24*60*60*1000,
         httpOnly: true,
+        sameSite: "none",
         domain: ".onrender.com" // "localhost" for development
     },
 }));
@@ -75,7 +74,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use((req, res, next) => {
-    console.log(req.session); // Log session to verify it's being created
+    console.log(req.session); 
     next();
 });
 
@@ -145,7 +144,7 @@ passport.use("local",
 )
 
 passport.serializeUser((user, done) => {
-    done(null, user);
+    done(null, user.id);
 });
 
 // passport.deserializeUser((user, done) => {
