@@ -60,6 +60,7 @@ app.use(cookieParser());
 app.use(session({
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     secret: "reactionInReact",
+    sameStie: "None",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -73,6 +74,10 @@ app.use(session({
 // passport setup
 app.use(passport.initialize());
 app.use(passport.session());
+app.use((req, res, next) => {
+    console.log(req.session); // Log session to verify it's being created
+    next();
+});
 
 function isAuthenticated(req, res, next){
     if(req.isAuthenticated()){
