@@ -56,6 +56,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 
 // session setup
+app.set('trust proxy', 1);
 app.use(session({
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     secret: "reactionInReact",
