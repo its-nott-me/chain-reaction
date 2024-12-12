@@ -4,8 +4,6 @@ import { instrument } from "@socket.io/admin-ui";
 import { Server } from "socket.io";
 import http from "http";
 import cors from "cors";
-// import path from "path";
-// import { fileURLToPath } from "url";
 import passport, { Passport } from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy } from "passport-local";
@@ -41,8 +39,6 @@ const io = new Server(server, {
         credentials: true,
     }
 });
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 
 // const client = createClient();
 
@@ -475,7 +471,6 @@ app.get('/set-cookie', (req, res) => {
         domain: '.onrender.com', // Adjust for your production domain
         maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
-    req.session.user = {id: req.user._id || "abcd"}
     res.send('Cookie manually set');
     console.log("session created")
 });
