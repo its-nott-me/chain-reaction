@@ -61,7 +61,7 @@ app.use(session({
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     secret: "reactionInReact",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
         path: "/",
         secure: true,// false for http and treu for https
@@ -145,24 +145,6 @@ passport.use("local",
         }
     )
 )
-
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
-// passport.deserializeUser((user, done) => {
-//     done(null, user);
-// });
-
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await User.findById(id);  // Retrieve user from the database
-        done(null, user);  // Attach user to the request object
-    } catch (err) {
-        done(err);
-    }
-});
-
 
 
 
@@ -926,6 +908,23 @@ app.get("/online/gameState/:roomId", async(req, res) => {
 });
 
 
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+// passport.deserializeUser((user, done) => {
+//     done(null, user);
+// });
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);  // Retrieve user from the database
+        done(null, user);  // Attach user to the request object
+    } catch (err) {
+        done(err);
+    }
+});
 
 
 // -- Global error handler --
