@@ -14,6 +14,7 @@ function Login() {
         setError(""); // Clear any previous error
 
         try {
+            await axios.get(`${apiURL}/set-cookie`);
             const response = await axios.post(`${apiURL}/login`, { email, password });
             if (response.status === 200) window.location.href = "/";
         } catch (error) {
