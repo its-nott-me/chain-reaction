@@ -148,9 +148,19 @@ passport.serializeUser((user, done) => {
     done(null, user);
 });
 
-passport.deserializeUser((user, done) => {
-    done(null, user);
+// passport.deserializeUser((user, done) => {
+//     done(null, user);
+// });
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);  // Retrieve user from the database
+        done(null, user);  // Attach user to the request object
+    } catch (err) {
+        done(err);
+    }
 });
+
 
 
 
