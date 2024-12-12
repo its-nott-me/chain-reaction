@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSocket } from "../../contexts/SocketContext";
 
+axios.defaults.withCredentials = true;
 function CreateRoomDialog() {
     const socket = useSocket();
     const [roomCode, setRoomCode] = useState("");

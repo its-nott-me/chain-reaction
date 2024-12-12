@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Header from "../headers/Header";
 
-
+axios.defaults.withCredentials = true;
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
