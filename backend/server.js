@@ -63,7 +63,7 @@ app.use(session({
         maxAge: 24*60*60*1000,
         httpOnly: true,
         sameSite: "none",
-        domain: ".onrender.com" // "localhost" for development
+        // domain: ".onrender.com" // "localhost" for development
     },
 }));
 // passport setup
@@ -71,7 +71,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use((req, res, next) => {
     console.log(req.session); 
-    console.log('Response Headers:', res.getHeaders());
+    console.log('Response Headers:', res.getHeaders()); // Set-cookie header not found
     next();
 });
 
@@ -128,7 +128,7 @@ passport.use("local",
                     return done(null, false, {message: "Email not registered"});
                 }
 
-                const isMatch = await bcrypt.compare(password, user.password);
+                const isMatch = bcrypt.compare(password, user.password);
                 if(!isMatch){
                     return done (null, false, {message: "Incorrect password"});
                 }
