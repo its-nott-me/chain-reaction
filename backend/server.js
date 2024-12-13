@@ -62,8 +62,8 @@ app.use(session({
         secure: true,// false for http and treu for https
         maxAge: 24*60*60*1000,
         httpOnly: true,
-        sameSite: "lax",
-        // domain: ".onrender.com" // "localhost" for development
+        sameSite: "none",
+        domain: ".onrender.com" // "localhost" for development
     },
 }));
 // passport setup
