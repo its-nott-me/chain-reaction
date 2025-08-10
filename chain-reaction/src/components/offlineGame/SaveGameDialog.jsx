@@ -9,6 +9,7 @@ function SaveGameDialog({ playersState, currentPlayerIndex, gridState, playerHas
     const [newSlotName, setNewSlotName] = useState([" ", " ", " "]);
     const [canSave, setCanSave] = useState(null);
     const apiURL = process.env.REACT_APP_API_URL;
+    const token = localStorage.getItem("token");
 
     function openSaveDialog() {
         if (gridState.some(r => r.some(cell => cell.orbs > 0))) { setCanSave(true); }
@@ -39,7 +40,11 @@ function SaveGameDialog({ playersState, currentPlayerIndex, gridState, playerHas
             playerHasPlayed,
             timestamp: new Date(),
         };
-        await axios.post(`${apiURL}/saveGame`, { gameData });
+        await axios.post(`${apiURL}/saveGame`, { gameData }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
         setIsDialogOpen(false);
         getSaves();
     };
@@ -60,13 +65,21 @@ function SaveGameDialog({ playersState, currentPlayerIndex, gridState, playerHas
             });
         
             if (slotIndex !== undefined && newName !== " ") {
-                await axios.post(`${apiURL}/renameSave`, { slotIndex, newName }); // Use slotIndex in request
+                await axios.post(`${apiURL}/renameSave`, { slotIndex, newName }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            }); // Use slotIndex in request
             }
     };
     
 
     async function getSaves() {
-        const result = await axios.get(`${apiURL}/retrieveSaves/abstract`);
+        const result = await axios.get(`${apiURL}/retrieveSaves/abstract`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
         const saves = result.data;
 
         if (saves != null) {

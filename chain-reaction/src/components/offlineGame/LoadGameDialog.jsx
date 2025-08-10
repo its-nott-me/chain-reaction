@@ -6,6 +6,7 @@ function LoadGameDialog({ loadGame }) {
     const [saveSlots, setSaveSlots] = useState([null, null, null]);
     const [slotNames, setSlotNames] = useState(["Empty Slot", "Empty Slot", "Empty Slot"]);
     const apiURL = process.env.REACT_APP_API_URL;
+    const token = localStorage.getItem("token");
 
     function openLoadDialog() { setIsLoadDialogOpen(true); }
     function closeLoadDialog() { setIsLoadDialogOpen(false); }
@@ -14,8 +15,13 @@ function LoadGameDialog({ loadGame }) {
         getSaves();
     }, []);
 
+
     async function getSaves() {
-        const result = await axios.get(`${apiURL}/retrieveSaves`);
+        const result = await axios.get(`${apiURL}/retrieveSaves`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
         const saves = result.data;
 
         if (saves.length > 0) {

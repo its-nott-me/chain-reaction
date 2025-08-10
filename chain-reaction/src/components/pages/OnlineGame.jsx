@@ -16,6 +16,7 @@ function OnlineGame() {
     const [isWinDialogOpen, setIsWinDialogOpen] = useState(false);
     const socket = useSocket();
     const apiURL = process.env.REACT_APP_API_URL;
+    const token = localStorage.getItem("token");
 
     useEffect(() => {
         if (socket) {
@@ -54,16 +55,24 @@ function OnlineGame() {
     };
 
     const handleRestartGame = async () => {
-        const response = await axios.post(`${apiURL}/createRoomCode`);
+        const response = await axios.post(`${apiURL}/createRoomCode`, null, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        });
         const waitingRoomCode = response.data.roomCode;
-        console.log(waitingRoomCode);
+        console.log(response);
 
         socket.emit("create-wait-room", waitingRoomCode, user);
         setIsWinDialogOpen(false);
     };
 
     async function getOnlineGameStateData() {
-        const response = await axios.get(`${apiURL}/online/gameState/${roomId}`);
+        const response = await axios.get(`${apiURL}/online/gameState/${roomId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
         console.log(response.data);
         if(!response.data){window.location.href = "/unauthorised";}
         setGridData(response.data);
@@ -71,7 +80,11 @@ function OnlineGame() {
 
     async function getUser() {
         try{
-            const response = await axios.get(`${apiURL}/getUserData`);
+            const response = await axios.get(`${apiURL}/getUserData`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
             setUser(response.data);
             console.log(response.data);
         } catch (error) {

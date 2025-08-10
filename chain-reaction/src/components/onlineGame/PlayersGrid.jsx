@@ -8,6 +8,7 @@ const PlayersGrid = ({ roomCode, user, playersData }) => {
     // const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A5", "#A533FF", "#FF8F33", "#33FFF5", "#ffef3f"];
     const socket = useSocket(); // Socket instance from context
     const apiURL = process.env.REACT_APP_API_URL;
+    const token = localStorage.getItem("token");
 
     // Function to add or update a player, avoiding duplicates
     const addOrUpdatePlayer = (newPlayer) => {
@@ -35,7 +36,11 @@ const PlayersGrid = ({ roomCode, user, playersData }) => {
 
         // Fetch initial player data and ensure no duplicates
         axios
-            .get(`${apiURL}/waiting/players/${roomCode}`)
+            .get(`${apiURL}/waiting/players/${roomCode}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            })
             .then((response) => {
                 const fetchedPlayers = response.data;
 

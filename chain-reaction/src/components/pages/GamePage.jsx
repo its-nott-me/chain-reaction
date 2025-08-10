@@ -86,49 +86,6 @@ function GamePage(){
         );
     });
 
-
-    // cleanup this mess craphead
-        // function renderXplosionOrbs(rowIndex, colIndex){
-        //     let ownerIndex = currentPlayerIndex;
-        //     while(players[ownerIndex].lost){
-        //         ownerIndex = ownerIndex === 0 ? players.length - 1 : ownerIndex--;
-        //     }
-            
-        //     ownerIndex = ownerIndex === 0 ? players.length-1 : ownerIndex-1;
-        //     const capacity = getCellCapacity(rowIndex, colIndex);
-            
-        //     const explosionOrbs = [];
-        //     for (let i = 0; i < capacity; i++) {
-        //         explosionOrbs.push(<XplosionOrb key={`explosion-${i}`} className="explosion-orb" />);
-        //     }
-            
-        //     const ToLeftOrb = <XplosionOrb destination="left" color={`${players[ownerIndex].color}`} />
-        //     const ToRightOrb = <XplosionOrb destination="right" color={`${players[ownerIndex].color}`} />
-        //     const ToUpOrb = <XplosionOrb destination="up" color={`${players[ownerIndex].color}`} />
-        //     const ToDownOrb = <XplosionOrb destination="down" color={`${players[ownerIndex].color}`} />
-
-        //     const xplosionOrbs = [];
-
-        //     if(rowIndex < rows-1) xplosionOrbs.push(ToDownOrb);
-        //     if(rowIndex > 0) xplosionOrbs.push(ToUpOrb);
-        //     if(colIndex < cols-1) xplosionOrbs.push(ToRightOrb);
-        //     if(colIndex > 0) xplosionOrbs.push(ToLeftOrb);
-
-        //     setTimeout(() => stopXplosion(rowIndex, colIndex), 1000)
-
-        //     return xplosionOrbs
-        // }
-
-        // function stopXplosion(row, col){
-        //     setGrid(prev => {
-        //         return prev.map((r, rowIndex) => {
-        //             return r.map((cell, colIndex) => {
-        //                 return {...cell, explode: false}
-        //             })
-        //         })
-        //     })
-        // }
-
     async function handleCellClick(row, col) {
         if ((grid[row][col].owner === null || grid[row][col].owner === currentPlayerIndex) && !isGameOver) {
             let newGrid = grid.map((cellRow, rowIndex) => {

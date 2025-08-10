@@ -53,17 +53,6 @@ function OnlineGameGrid({gridData, roomId, user, handleLoseGame, handleWinGame})
     const {rows, cols} = useMemo(() => (gridData.gridSize), [gridData.gridSize]);
     const [players, setPlayers] = useState(gridData.players);
 
-    // let players = useMemo(() => 
-    //     gridData.playersState || gridData.playersData.map((player, index) => ({
-    //         index: index,
-    //         name: player.username,
-    //         color: player.color,
-    //         score: 0,
-    //         lost: false,
-    //         hasPlayed: false
-    //     })), [gridData.playersData]
-    // );
-
     let playerHasPlayed = useMemo(() => gridData.playerHasPlayed || Array.from({length: players.length}, () => false), [gridData.playersData]);
     const [isGameOver, setIsGameOver] = useState(false);
     const [currentPlayerIndex, setCurrentPlayerIndex] = useState(gridData.currentPlayerIndex || 0);
@@ -107,63 +96,8 @@ function OnlineGameGrid({gridData, roomId, user, handleLoseGame, handleWinGame})
                 />
                 {renderOrbs(cell.orbs, cell.owner)} {/* Render the orb component */}
             </div>
-
-//             <div
-//                 key={${rowIndex}-${colIndex}}
-//                 className="border p-1 text-center bg-black w-16 h-16 flex items-center justify-center relative"
-//                 style={{
-//                     cursor: ((players[currentPlayerIndex].id === user) && (cell.owner === null || cell.owner === currentPlayerIndex)) && "pointer",
-//                     borderColor: players[currentPlayerIndex]?.color,
-//                 }}
-//                 onClick={() => handleCellClick(rowIndex, colIndex)}
-//             >
-//                 {renderOrbs(cell.orbs, cell.owner)} {/* Render the orb component */}
-//             </div>
-
         );
     });
-
-    // cleanup this mess craphead
-        // function renderXplosionOrbs(rowIndex, colIndex){
-        //     let ownerIndex = currentPlayerIndex;
-        //     while(players[ownerIndex].lost){
-        //         ownerIndex = ownerIndex === 0 ? players.length - 1 : ownerIndex--;
-        //     }
-            
-        //     ownerIndex = ownerIndex === 0 ? players.length-1 : ownerIndex-1;
-        //     const capacity = getCellCapacity(rowIndex, colIndex);
-            
-        //     const explosionOrbs = [];
-        //     for (let i = 0; i < capacity; i++) {
-        //         explosionOrbs.push(<XplosionOrb key={`explosion-${i}`} className="explosion-orb" />);
-        //     }
-            
-        //     const ToLeftOrb = <XplosionOrb destination="left" color={`${players[ownerIndex].color}`} />
-        //     const ToRightOrb = <XplosionOrb destination="right" color={`${players[ownerIndex].color}`} />
-        //     const ToUpOrb = <XplosionOrb destination="up" color={`${players[ownerIndex].color}`} />
-        //     const ToDownOrb = <XplosionOrb destination="down" color={`${players[ownerIndex].color}`} />
-
-        //     const xplosionOrbs = [];
-
-        //     if(rowIndex < rows-1) xplosionOrbs.push(ToDownOrb);
-        //     if(rowIndex > 0) xplosionOrbs.push(ToUpOrb);
-        //     if(colIndex < cols-1) xplosionOrbs.push(ToRightOrb);
-        //     if(colIndex > 0) xplosionOrbs.push(ToLeftOrb);
-
-        //     setTimeout(() => stopXplosion(rowIndex, colIndex), 1000)
-
-        //     return xplosionOrbs
-        // }
-
-        // function stopXplosion(row, col){
-        //     setGrid(prev => {
-        //         return prev.map((r, rowIndex) => {
-        //             return r.map((cell, colIndex) => {
-        //                 return {...cell, explode: false}
-        //             })
-        //         })
-        //     })
-        // }
 
     const socket = useSocket();
 
@@ -505,7 +439,7 @@ function OnlineGameGrid({gridData, roomId, user, handleLoseGame, handleWinGame})
 
             <div className="text-center flex-1 flex flex-col justify-around items-center lg:w-64">
                 
-                    {!isGameOver && (
+                    {isGameOver && (
                         <>
                             <div className="bg-gray-100 rounded-lg p-4 shadow-lg text-center space-y-2">
                                 <p className="text-xl font-bold text-green-600">

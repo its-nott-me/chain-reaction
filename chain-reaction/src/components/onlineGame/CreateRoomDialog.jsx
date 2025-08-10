@@ -2,30 +2,37 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSocket } from "../../contexts/SocketContext";
 
-axios.defaults.withCredentials = true;
 function CreateRoomDialog() {
     const socket = useSocket();
     const [roomCode, setRoomCode] = useState("");
     const [user, setUser] = useState(null);
     const apiURL = process.env.REACT_APP_API_URL;
 
-    async function getRoomCode() {
-        try {
-            const result = await axios.get(`${apiURL}/getUserData`, {withCredentials: true});
-            setUser(result.data);
-
-            const response = await axios.post(`${apiURL}/createRoomCode`, null, {withCredentials: true});
-            console.log(response.data);
-            setRoomCode(response.data.roomCode);
-        } catch (error) {
-            console.log(error);
-            // window.location.href = "/unauthorised";
-        }
-    }
-
     useEffect(() => {
-        getRoomCode();
-    }, []);
+        async function fetchData() {
+            try {
+                const token = localStorage.getItem('token');
+                const result = await axios.get(`${apiURL}/getUserData`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                });
+                setUser(result.data);
+
+                const response = await axios.post(`${apiURL}/createRoomCode`, null, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                });
+                setRoomCode(response.data.roomCode);
+            } catch (error) {
+                console.log(error);
+                window.location.href = "/unauthorised";
+            }
+        }
+
+        fetchData();
+    }, [apiURL]);
 
     useEffect(() => {
         if (socket) {
@@ -34,18 +41,20 @@ function CreateRoomDialog() {
             });
 
             return () => {
-                socket?.off("wait-room-created");
+                socket.off("wait-room-created");
             };
         }
     }, [socket, roomCode]);
 
     function handleCreateRoom() {
-        socket.emit("create-wait-room", roomCode, user);
+        console.log(socket);
+        if (roomCode && user) {
+            socket.emit("create-wait-room", roomCode, user);
+        }
     }
 
-    return ( // 
+    return (
         <div className="p-8 bg-fuchsia-500 text-white shadow-xl rounded-2xl w-full mx-auto text-center space-y-6 relative">
-            {/* Overlay */}
             <div className="absolute inset-0 bg-pink-400 opacity-20 rounded-2xl pointer-events-none blur-xl"></div>
             <div className="relative z-10">
                 <h2 className="text-2xl font-extrabold">Create Room</h2>

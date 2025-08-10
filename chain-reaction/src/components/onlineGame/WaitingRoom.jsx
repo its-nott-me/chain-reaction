@@ -63,9 +63,15 @@ function WaitingRoom() {
         // Add more avatar URLs here...
     ];
 
+    const token = localStorage.getItem("token");
+
     async function getUser() {
         try{
-            const response = await axios.get(`${apiURL}/getUserData`);
+            const response = await axios.get(`${apiURL}/getUserData`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
             console.log(response.data);
             setUser(response.data);
         }  catch (error) {
@@ -75,7 +81,11 @@ function WaitingRoom() {
 
     async function getOwner(){
         try{
-            const response = await axios.get(`${apiURL}/getOwnerData/${roomCode}`);
+            const response = await axios.get(`${apiURL}/getOwnerData/${roomCode}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
         console.log(response.data);
         setOwner(response.data);
         return response.data;
@@ -85,7 +95,11 @@ function WaitingRoom() {
     }
 
     async function getGridSize(){
-        const response = await axios.get(`${apiURL}/waiting/gridSize/${roomCode}`);
+        const response = await axios.get(`${apiURL}/waiting/gridSize/${roomCode}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
         setGridSize(response.data);
     }
 

@@ -1,40 +1,45 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-// Create the context
 const SocketContext = createContext();
 
-// Custom hook to use the socket context
 export const useSocket = () => useContext(SocketContext);
 
-// Provider component
 export const SocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState(null); // Use useState to manage the socket instance
-
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    // Initialize the socket only if it hasn't been set yet
     if (!socket) {
-      const newSocket = io(process.env.REACT_APP_API_URL); // Replace with your server URL
+      const token = localStorage.getItem('token');
+      console.log("Connecting to:", process.env.REACT_APP_API_URL);
+      console.log("Token:", token);
+
+      const newSocket = io(process.env.REACT_APP_API_URL, {
+        auth: { token }, 
+        reconnectionAttempts: 5,
+        reconnectionDelay: 100,
+      });
+
       setSocket(newSocket);
 
-      // Listen for connection status
-      newSocket.on('connect', () => {
-        console.log('Connected to the socket server');
+      newSocket.on("connect", () => {
+        console.log("✅ Connected to socket server");
       });
 
-      newSocket.on('disconnect', () => {
-        console.log('Disconnected from the socket server');
+      newSocket.on("connect_error", (err) => {
+        console.error("❌ Connection error:", err.message);
       });
 
-      // Cleanup function to properly disconnect the socket
+      newSocket.on("disconnect", () => {
+        console.log("🔌 Disconnected");
+      });
+
       return () => {
         newSocket.disconnect();
       };
     }
-  }, []); 
+  }, []);
 
-  // Provide the socket instance to children
   return (
     <SocketContext.Provider value={socket}>
       {children}

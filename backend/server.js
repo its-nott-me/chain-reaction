@@ -1,46 +1,37 @@
 import express from "express";
-// import { createClient } from "redis";
 import { instrument } from "@socket.io/admin-ui";
 import { Server } from "socket.io";
 import http from "http";
 import cors from "cors";
-import passport, { Passport } from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy } from "passport-local";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
-import session from "express-session";
-// import RedisStore from "connect-redis";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
-import MongoStore from "connect-mongo";
-import User from "./database/models/user.js";
-import GameState from "./database/models/gameState.js"
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "./database/models/user.js";
+import GameState from "./database/models/gameState.js";
 import RoomCode from "./database/models/roomCode.js";
 import { Message } from "./database/models/message.js";
 import PlayerSetting from "./database/models/playerSetting.js";
 import OnlineGameState from "./database/models/onlineGameState.js";
 import WaitingRoom from "./database/models/waitingRoom.js";
-
+import mongoose from "mongoose";
 
 dotenv.config();
-
-//setup redis client
-// const redisClient = createClient();
-// await redisClient.connect(); // connect to redis
 
 const port = process.env.PORT || 5000;
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors:{
-        origin: ["http://localhost:3000", "https://admin.socket.io", `${process.env.FRONTEND_URL}`], // allow requests from frontend
+        origin: ["https://admin.socket.io", `${process.env.FRONTEND_URL}`],
         methods:["GET", "POST"],
         credentials: true,
     }
 });
-
-// const client = createClient();
+console.log(process.env.FRONTEND_URL)
 
 // -- Middlewares --
 app.use(cors({
@@ -50,113 +41,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
-
-// session setup
-app.use(session({
-    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-    secret: "reactionInReact",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        path: "/",
-        secure: true,// false for http and treu for https
-        maxAge: 24*60*60*1000,
-        httpOnly: true,
-        sameSite: "None",
-        domain: ".onrender.com" // "localhost" for development
-    },
-}));
-// passport setup
 app.use(passport.initialize());
-app.use(passport.session());
-app.use((req, res, next) => {
-    console.log(req.session); 
-    console.log('Response Headers:', res.getHeaders()); // Set-cookie header not found
-    next();
-});
-
-
-function isAuthenticated(req, res, next){
-    if(req.isAuthenticated()){
-        return next();
-    }
-    res.redirect("/login");
-}
-
-// passport strategy setup
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`
-},async (accessToken, refreshToken, profile, done) => {
-    // save user profile info or store it in a db
-    // try {
-    //     // The profile object contains the authenticated user's Google data
-    //     const user = {
-    //         provider: 'google',
-    //         googleId: profile.id,
-    //         username: profile.displayName,
-    //         email: profile.emails[0].value,
-    //         profilePicture: profile.photos[0]?.value // Optional
-    //     };
-
-    //     // Check if the user already exists in the database
-    //     let existingUser = await User.findOne({ googleId: user.googleId });
-
-    //     if (!existingUser) {
-    //         // Create and save new user if they don't exist
-    //         existingUser = new User(user);
-    //         await existingUser.save();
-    //     }
-
-    //     return done(null, existingUser); // Pass the user object to the next middleware
-    // } catch (error) {
-    //     return done(error, null);
-    // }
-
-    return done(null, profile);
-}));
-
-passport.use("local", 
-    new Strategy(
-        {usernameField: "email", passReqToCallback: true},
-        async function verify (req, email, password, done){
-            // console.log(email, password);
-            try{
-                const user = await User.findOne({email: email});
-                if(!user){
-                    return done(null, false, {message: "Email not registered"});
-                }
-
-                const isMatch = bcrypt.compare(password, user.password);
-                if(!isMatch){
-                    return done (null, false, {message: "Incorrect password"});
-                }
-
-                return done(null, user);
-            } catch(error){
-                return done(error);
-            }
-        }
-    )
-)
-
-
-
-// -- Redis configs --
-// Connect to Redis
-// await client.connect();
-// console.log("Connected to Redis...");
-// client.on("error", (err) => console.log("Redis Client Error", err));
-
-// // Set a value in Redis
-// client.set("greeting", "Hello from Redis", (err, reply) => {
-//     if (err) {
-//         console.log(err);
-//     }
-//     console.log("Redis SET reply:", reply);
-// });
-
 
 // MongoDB connect
 mongoose.connect(process.env.MONGODB_URI, {
@@ -165,12 +50,129 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log("Connected to MongoDB"))
 .catch((err) => console.error("MongoDB connection error: ", err))
 
+// JWT Authentication middleware
+const authenticateJWT = (req, res, next) => {
+    const token = req.header('Authorization')?.split(' ')[1];
+
+    if (token) {
+        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+            if (err) {
+                return res.sendStatus(403);
+            }
+            req.user = user;
+            next();
+        });
+    } else {
+        console.error("Auth error");
+        res.sendStatus(401);
+    }
+};
+
+// Configure Google Passport Strategy
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`
+}, async (accessToken, refreshToken, profile, done) => {
+    try {
+        let user = await User.findOne({ googleId: profile.id });
+
+        if (!user) {
+            user = new User({
+                provider: 'google',
+                googleId: profile.id,
+                username: profile.displayName,
+                email: profile.emails[0].value,
+                profilePicture: profile.photos[0]?.value
+            });
+            await user.save();
+        }
+
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        
+        done(null, { user, token });
+    } catch (error) {
+        done(error, null);
+    }
+}));
+
+passport.use("local",
+    new Strategy(
+        {usernameField: "email", passReqToCallback: true},
+        async function verify(req, email, password, done) {
+            try {
+                const user = await User.findOne({email: email});
+                if (!user) {
+                    return done(null, false, {message: "Email not registered"});
+                }
+
+                const isMatch = await bcrypt.compare(password, user.password);
+                if (!isMatch) {
+                    return done(null, false, {message: "Incorrect password"});
+                }
+
+                return done(null, user);
+            } catch(error) {
+                return done(error);
+            }
+        }
+    )
+);
+
+// Google OAuth Routes
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
+    if (req.user) {
+        res.json({ token: req.user.token }); // Send JWT token to the client
+    } else {
+        res.status(401).send('Authentication failed');
+    }
+});
+
 
 // -- Socket Congfigs --
 instrument(io, {
     auth: false,
     mode: "development",
 });
+
+
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    console.log("🛡️ Incoming socket auth token:", token);
+    try {
+        const token = socket.handshake.auth.token;
+        if (!token) {
+            console.error("Auth error: no token")
+            return next(new Error('Authentication error'));
+        }
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                console.error("JWT verification error:", err.message); // Add this
+                return next(new Error('Authentication error'));
+            }
+            socket.user = decoded;
+            next();
+        });
+    } catch (err) {
+        next(new Error('Authentication error'));
+    }
+});
+
+async function getUserIdByEmail(email){
+    try{
+        const user = await User.findOne({email});
+        if(user){
+            return user._id;
+        } else {
+            throw new Error("User not found");
+        }
+    } catch (error){
+        console.error("Error fetching user: ", error);
+        throw error;
+    }
+}
 
 io.on("connection", (socket) => {
     console.log("connected to socket");
@@ -436,7 +438,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("leave-game-room", async (roomId) => { // user contains only userId
-        const roomSize = io.sockets.adapter.rooms.get(roomId).size;
+        const roomSize = io?.sockets.adapter.rooms.get(roomId)?.size;
         console.log("roomSize: ", roomSize);
         if(roomSize === 1){
             await Message.deleteMany({roomCode: roomId});
@@ -455,161 +457,118 @@ io.on("connection", (socket) => {
 
 
 // -- Express Configs --
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, '..', 'chain-reaction', 'build', 'index.html'));
-// });
+
 app.get("/", (req, res) => {
     res.send("Welcome to chain reaction");
 });
 
-app.get('/set-cookie', (req, res) => {
-    res.cookie('connect.sid', req.sessionID, {
-        path: '/',
-        secure: process.env.NODE_ENV === 'production', // Set to true for HTTPS
-        httpOnly: true,
-        sameSite: 'none', // Ensure cross-site cookies are allowed
-        domain: '.onrender.com', // Adjust for your production domain
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
-    res.send('Cookie manually set');
-    console.log("session created")
-});
-
-// Retrieve the value from Redis
-// app.get("/greeting", async (req, res) => {
-//     const greeting = await client.get("greeting");
-//     res.send(greeting);
-// }); // for testing redis-cli... first setup the key "greeting" in redis-cli
-
-// Routes for OAuth2
-app.get("/auth/google", (req, res, next) => {
-    // allow if authenticated
-    if(req.isAuthenticated()){
-        return res.redirect("/profile");
-
-    // redirect to login if not authenticated
-    } else {
-        passport.authenticate("google", {
-            scope: ["profile", "email"],
-            prompt: "select_account",
-        })(req, res, next);
-    }
-});
+// Routes for OAuth2 Start
+app.get("/auth/google", passport.authenticate("google", {
+    scope: ["profile", "email"],
+    prompt: "select_account",
+}));
 
 // handling success and failed login 
 app.get("/auth/google/callback", 
-    passport.authenticate("google", { failureRedirect: "/login" }),
+    passport.authenticate("google", { failureRedirect: "/login", session: false }),
     async (req, res) => {
         try {
-            // Extract user data from the Google OAuth response
             const userData = {
                 provider: 'google',
-                googleId: req.user.id, // From Google OAuth response
-                username: req.user.displayName, // From Google OAuth response
-                email: req.user.emails[0].value, // From Google OAuth response
-                profilePicture: "https://cdn-icons-png.flaticon.com/256/1752/1752776.png", // From Google OAuth response
+                googleId: req.user.id,
+                username: req.user.displayName,
+                email: req.user.emails[0].value,
+                profilePicture: "https://cdn-icons-png.flaticon.com/256/1752/1752776.png",
             };
 
-            // Check if the user already exists in the database
-            const existingUser = await User.findOne({ googleId: userData.googleId });
+            let user = await User.findOne({ googleId: userData.googleId });
 
-            if (!existingUser) {
-                // If the user does not exist, create a new user
-                const newUser = new User(userData);
-                await newUser.save(); // Save the new user to the database
+            if (!user) {
+                user = new User(userData);
+                await user.save();
             }
 
-            // User is authenticated, redirect to the profile page
-            // res.redirect("/profile");
-            
-            res.redirect(process.env.FRONTEND_URL); // Redirect on success
+            // Create JWT token
+            const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+            // Redirect with token
+            res.redirect(`${process.env.FRONTEND_URL}?token=${token}`);
         } catch (error) {
             console.error('Error during Google OAuth callback:', error);
-            res.redirect("/login"); // Redirect to login on error
+            res.redirect("/login");
         }
     }
 );
 
-//route to check session
-app.get("/profile", (req, res) => {
-    if(req.isAuthenticated()){
-        console.log("authenticated");
-        res.send(`Hellow ${req.user.displayName}`);
-    } else {
-        console.log("not authentuicated");
-        res.redirect("/auth/google");
-    }
-})
+// Example of a protected route
+app.get("/profile", authenticateJWT, (req, res) => {
+    res.send(`Hello ${req.user.email}`);
+});
 
-//check if authenticated
-app.get("/auth/check", (req, res) => {
-    try{
-        res.send(req.isAuthenticated());
-    } catch (err){
-        // why would you even get an error here?? -_-
-        console.log("error checking authentication");
+// Check if authenticated
+app.get("/auth/check", authenticateJWT, (req, res) => {
+    res.send(true);
+});
+
+// Send currently logged-in user data
+app.get("/getUserData", authenticateJWT, async(req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (user) {
+            const userData = {
+                username: user.username || req.user.username,
+                email: user.email,
+                userId: user._id,
+                avatar: user.profilePicture,
+            };
+            res.send(userData);
+        } else {
+            res.status(404).send("User not found");
+        }
+    } catch (error) {
+        console.error("Error retrieving user data: ", error);
+        res.status(500).send("Error retrieving user data");
     }
 });
 
-// send currently logged-in user data
-app.get("/getUserData", async(req, res) => {
-    if(req.isAuthenticated()){
-        // google provider
-        let user;
-        if(req.user.provider === "google"){
-            user = {
-                username: req.user.displayName,
-                email: req.user.emails[0].value,
-            }
-        } else {
-            user = {
-                username: req.user.username,
-                email: req.user.email,
-            }
-        }
-        const userDB = await User.findOne({email: user.email});
-        user = {...user, userId: userDB._id, avatar: userDB.profilePicture};
-        // console.log(user);
-        res.send(user);
-    } else {
-        res.status(401).send("not authenticated");
-    }
-})
-
-
-// local auth routes
-app.post("/auth/local", passport.authenticate("local", {
-    successRedirect: "/profile",
-    failureRedirect: "/login",
-}))
-
-app.post("/login", (req, res, next) => {
+// Local authentication
+app.post("/auth/local", (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
         if (err) {
-            console.error("Error in authentication", err);
             return next(err);
         }
         if (!user) {
-            // console.log("Login failed:", info);
-            return res.sendStatus(401);
+            return res.status(401).json({ message: "Login failed" });
         }
-        req.login(user, (loginErr) => {
-            if (loginErr) {
-                console.error("Error in login", loginErr);
-                return next(loginErr);
-            }
-            res.sendStatus(200);
-        });
+
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        res.json({ token });
     })(req, res, next);
 });
 
+// Login route
+app.post("/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+        if (err) {
+            return next(err);
+        }
+        if (!user) {
+            return res.status(401).json({ message: "Login failed" });
+        }
 
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        res.json({ token });
+    })(req, res, next);
+});
+
+// Registration route
 app.post("/register", async (req, res) => {
     const { email, password, username, avatar } = req.body;
-
+    
     try {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
+            console.error("user exists\n", existingUser)
             return res.status(400).json({ message: "User already exists" });
         }
 
@@ -623,62 +582,40 @@ app.post("/register", async (req, res) => {
         });
 
         await newUser.save();
-        return res.status(201).json({ message: "Registration successful" }); // Respond with JSON success message
+        
+        // Issue a JWT after successful registration
+        const token = jwt.sign({ id: newUser._id, email: newUser.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        return res.status(201).json({ message: "Registration successful", token });
     } catch (error) {
-        console.error("Error during registration:", error);
+        console.error("registration error: ", error);
         res.status(500).json({ message: "Server error during registration" });
     }
 });
 
-//logout route
+// Logout route
 app.get("/logout", (req, res) => {
-    req.logout((err) => {
-        if (err) {
-            console.error("Error during logout: ", err);
-            return res.status(500).json({ message: "Error during logout" });
-        }
-
-        // Destroy session stored in MongoDB
-        req.session.destroy((err) => {
-            if (err) {
-                console.error("Error destroying session: ", err);
-                return res.status(500).json({ message: "Error destroying session" });
-            }
-
-            // Clear session cookie
-            res.clearCookie("connect.sid", {
-                path: "/",
-                secure: false // Use true if serving over HTTPS
-            });
-
-            console.log("Session destroyed and user logged out");
-            res.status(200).send("Logged out successfully");
-        });
-    });
+    // Since we're using JWT, logout can be handled on the client side by removing the token
+    res.status(200).json({ message: "Logged out successfully" });
 });
 
-
+// Save game state function (no changes needed for auth conversion)
 async function saveGameState(email, gameData) {
     try {
-        // Find the user by googleId, not _id
+        // Find the user by email
         const user = await User.findOne({ email });
         if (!user) throw new Error("User not found");
         
-        let gameState = await GameState.findOne({user: user._id, slotIndex: gameData.slotIndex})
-        // Create and save the game state
-        if(gameState){
-            // updating xisiting gaemstate
+        let gameState = await GameState.findOne({ user: user._id, slotIndex: gameData.slotIndex });
+        
+        if (gameState) {
             Object.assign(gameState, gameData);
             await gameState.save();
-            
         } else {
             gameState = new GameState({
                 ...gameData,
                 user: user._id,
             });
             await gameState.save();
-            // console.log("id: ", user._id, "\ngamestate_id: ", gameState._id);
-            // Update the user by googleId to add the gameState
             await User.findOneAndUpdate(
                 { email: email },
                 { $push: { gameStates: gameState._id } }
@@ -691,16 +628,17 @@ async function saveGameState(email, gameData) {
     }
 }
 
-// save game endpoint
-app.post("/saveGame", (req, res) => {
-    const email = req.user?.provider === "local" ? req.user.email : req.user._json.email;
-    // console.log(email, req.body.gameData);
+// save game endpoint//
+
+// Use the JWT authentication middleware for protected routes
+app.post("/saveGame", authenticateJWT, (req, res) => {
+    const email = req.user.email;
     saveGameState(email, req.body.gameData)
         .then(() => res.sendStatus(200))
         .catch(() => res.sendStatus(500));
 });
 
-
+// Retrieve saves endpoint
 
 async function retrieveSavesAbstract(email) {
     try {
@@ -744,43 +682,41 @@ async function retrieveSaves(email) {
         return [];
     }
 }
-// Retrieve saves endpoint
-app.get("/retrieveSaves/abstract", async (req, res) => {
-    const email = req.user?.provider === "local" ? req.user.email : req.user._json.email;
+app.get("/retrieveSaves/abstract", authenticateJWT, async (req, res) => {
+    const email = req.user.email;
     try {
         const saves = await retrieveSavesAbstract(email);
-        // console.log(saves);
-        res.send(saves).status(200); 
+        res.status(200).send(saves);
     } catch (error) {
-        console.error("Error in retreiving abstract of saves: ", error);
+        console.error("Error in retrieving abstract of saves: ", error);
         res.sendStatus(500);
     }
 });
 
-app.get("/retrieveSaves", async (req, res) => {
-    // console.log(req.user);
-    const email = req.user?.provider === "local" ? req.user.email : req.user._json.email;
+app.get("/retrieveSaves", authenticateJWT, async (req, res) => {
+    const email = req.user.email;
     try {
         const saves = await retrieveSaves(email);
-        // console.log(saves);
-        res.send(saves).status(200); 
+        res.status(200).send(saves);
     } catch (error) {
-        console.error("Error in retreiving abstract of saves: ", error);
+        console.error("Error in retrieving saves: ", error);
         res.sendStatus(500);
     }
 });
 
-app.post("/renameSave", async (req, res) => {
-    const email = req.user?.provider === "local" ? req.user.email : req.user._json.email;
-    const { slotIndex, newName } = req.body; // Use slotIndex from request
+app.post("/renameSave", authenticateJWT, async (req, res) => {
+    const email = req.user.email;
+    const { slotIndex, newName } = req.body;
 
     try {
         const user = await User.findOne({ email });
-        if (!user) return res.status(404).send("User not found.");
+        if (!user) 
+            return res.status(404).send("User not found.");
         
         // Search for the game state with matching slotIndex
-        const gameStateId = await GameState.findOneAndUpdate({user: user._id, slotIndex}, {slotName: newName})
-        if (!gameStateId) return res.status(404).send("Game state not found in this slot.");
+        const gameState = await GameState.findOneAndUpdate({user: user._id, slotIndex}, {slotName: newName});
+        if (!gameState) 
+            return res.status(404).send("Game state not found in this slot.");
 
         res.sendStatus(200);
     } catch (err) {
@@ -792,7 +728,6 @@ app.post("/renameSave", async (req, res) => {
 
 // ------------------------------ Online routes ---------------------------
 
-//generate room codes
 function generateRoomCode(){
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvxyz";
     let code = "";
@@ -801,6 +736,7 @@ function generateRoomCode(){
     }
     return code;
 }
+
 async function createUniqueRoomCode(){
     let code;
     let unique = false;
@@ -813,77 +749,58 @@ async function createUniqueRoomCode(){
 
     return code;
 }
-async function getUserIdByEmail(email){
-    try{
-        const user = await User.findOne({email});
-        if(user){
-            return user._id;
-        } else {
-            throw new Error("User not found");
-        }
-    } catch (error){
-        console.error("Error fetching user: ", error);
-        throw error;
-    }
-}
 
-// protect this route using authentication
-app.post("/createRoomCode", async(req, res) => {
-    const {roomType} = req.body;
-    // console.log(req.body);
-
-    try{
-        const roomCode = await createUniqueRoomCode(roomType);
-        res.status(200).json({roomCode});
-    } catch(error){
+// Protect this route using authentication
+app.post("/createRoomCode", authenticateJWT, async (req, res) => {
+    try {
+        const roomCode = await createUniqueRoomCode();
+        res.status(200).json({ roomCode });
+    } catch (error) {
         console.error("Error generating room codes: ", error);
         res.sendStatus(500);
     }
 });
 
-app.get("/messages/:roomCode", async(req, res) => {
-    const {roomCode} = req.params;
-    try{
-        const messages = await Message.find({roomCode}).sort({timestamp: 1, _id: 1});
-        // console.log(messages);
+// You can decide if the following routes should also be protected based on your needs.
+app.get("/messages/:roomCode", authenticateJWT, async (req, res) => {
+    const { roomCode } = req.params;
+    try {
+        const messages = await Message.find({ roomCode }).sort({ timestamp: 1, _id: 1 });
         res.status(200).json(messages);
-    } catch(error){
-        console.log("error fetching messages: ", error);
+    } catch (error) {
+        console.log("Error fetching messages: ", error);
         res.status(500).send("Server error");
     }
 });
 
-app.get("/waiting/players/:roomCode", async(req, res) => {
-    const {roomCode} = req.params;
-
-    try{
-        const players = await PlayerSetting.find({roomCode});
-        // console.log(players);
+app.get("/waiting/players/:roomCode", authenticateJWT, async (req, res) => {
+    const { roomCode } = req.params;
+    try {
+        const players = await PlayerSetting.find({ roomCode });
         res.status(200).send(players);
     } catch (error) {
-        console.log("Error fetchign settings of players in waiting room: ", error);
+        console.log("Error fetching settings of players in waiting room: ", error);
         res.status(500).send("Server error");
     }
 });
 
-app.get("/getOwnerData/:roomCode", async(req, res) => {
-    const {roomCode} = req.params;
-    try{
-        const roomCodeEntry = await RoomCode.findOne({code: roomCode});
-        const waitingRoomEntry = await WaitingRoom.findOne({roomData: roomCodeEntry._id});
-
+app.get("/getOwnerData/:roomCode", authenticateJWT, async (req, res) => {
+    const { roomCode } = req.params;
+    try {
+        const roomCodeEntry = await RoomCode.findOne({ code: roomCode });
+        const waitingRoomEntry = await WaitingRoom.findOne({ roomData: roomCodeEntry._id });
         res.send(waitingRoomEntry.owner);
-    } catch (error){
+    } catch (error) {
         console.log("Error fetching waiting room owner: ", error);
         res.status(500).send("Server error");
     }
 });
 
-app.get("/waiting/gridSize/:roomCode", async(req, res) => {
-    const {roomCode} = req.params;
-    try{
-        const roomCodeEntry = await RoomCode.findOne({code: roomCode});
-        const waitingRoomEntry = await WaitingRoom.findOne({roomData: roomCodeEntry._id})
+app.get("/waiting/gridSize/:roomCode", authenticateJWT, async (req, res) => {
+    const { roomCode } = req.params;
+    try {
+        const roomCodeEntry = await RoomCode.findOne({ code: roomCode });
+        const waitingRoomEntry = await WaitingRoom.findOne({ roomData: roomCodeEntry._id });
         res.send(waitingRoomEntry.gridSize);
     } catch (error) {
         console.log("Error fetching gridSize");
@@ -891,37 +808,17 @@ app.get("/waiting/gridSize/:roomCode", async(req, res) => {
     }
 });
 
-app.get("/online/gameState/:roomId", async(req, res) => {
-    const {roomId} = req.params;
-    try{
-        const onlineGameStateEntry = await OnlineGameState.findOne({"owner.userId": roomId}).sort({createdAt: -1});
+app.get("/online/gameState/:roomId", authenticateJWT, async (req, res) => {
+    const { roomId } = req.params;
+    try {
+        const onlineGameStateEntry = await OnlineGameState.findOne({ "owner.userId": roomId }).sort({ createdAt: -1 });
         res.send(onlineGameStateEntry);
-        console.log("\n\nretrived entry: ", onlineGameStateEntry);
+        console.log("\n\nretrieved entry: ", onlineGameStateEntry);
     } catch (error) {
-        console.error("Error retreiving online game state: ", error);
+        console.error("Error retrieving online game state: ", error);
         res.sendStatus(500);
     }
 });
-
-
-
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
-// passport.deserializeUser((user, done) => {
-//     done(null, user);
-// });
-
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await User.findById(id);  // Retrieve user from the database
-        done(null, user);  // Attach user to the request object
-    } catch (err) {
-        done(err);
-    }
-});
-
 
 // -- Global error handler --
 app.use((err, req, res, next) => {

@@ -8,28 +8,33 @@ function JoinRoomDialog() {
 
     useEffect(() => {
         if (socket) {
-            socket.on("wait-room-joined", () => {
+            const onWaitRoomJoined = () => {
                 window.location.href = `/online/waiting/${roomCode}`;
-            });
+            };
 
-            socket.on("invalid-room-code", () => {
+            const onInvalidRoomCode = () => {
                 setError("Invalid room code. Please try again!");
-            });
+            };
 
-            socket.on("wait-room-full", () => {
+            const onWaitRoomFull = () => {
                 setError("Room full! Please try another room.");
-            });
+            };
 
+            socket.on("wait-room-joined", onWaitRoomJoined);
+            socket.on("invalid-room-code", onInvalidRoomCode);
+            socket.on("wait-room-full", onWaitRoomFull);
+
+            // Cleanup function
             return () => {
-                socket.off("wait-room-joined");
-                socket.off("invalid-room-code");
-                socket.off("wait-room-full");
+                socket.off("wait-room-joined", onWaitRoomJoined);
+                socket.off("invalid-room-code", onInvalidRoomCode);
+                socket.off("wait-room-full", onWaitRoomFull);
             };
         }
     }, [socket, roomCode]);
 
     const handleJoinRoom = () => {
-        if (roomCode.length === 6) {
+        if (roomCode.trim().length === 6) {
             socket.emit("join-wait-room", roomCode);
             setError(null);
         } else {
@@ -47,7 +52,6 @@ function JoinRoomDialog() {
 
     return (
         <div className="p-8 bg-gradient-to-br from-green-400 to-teal-500 text-white shadow-xl rounded-2xl max-w-sm mx-auto text-center space-y-6 relative">
-            {/* Overlay */}
             <div className="absolute inset-0 bg-yellow-400 opacity-20 rounded-2xl pointer-events-none blur-xl"></div>
             <div className="relative z-10">
                 <h2 className="text-2xl font-extrabold">Join Room</h2>

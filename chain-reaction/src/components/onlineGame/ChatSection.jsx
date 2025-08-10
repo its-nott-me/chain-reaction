@@ -13,6 +13,7 @@ function ChatSection({ user }) {
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([]);
     const apiURL = process.env.REACT_APP_API_URL;
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
         if (socket) {
@@ -24,7 +25,11 @@ function ChatSection({ user }) {
 
             // Fetch previous messages when component mounts
             axios
-                .get(`${apiURL}/messages/${roomCode}`)
+                .get(`${apiURL}/messages/${roomCode}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
                 .then((response) => {
                     setMessages(response.data);
                 })
@@ -37,7 +42,7 @@ function ChatSection({ user }) {
                 socket.off("new-message");
             };
         }
-    }, [socket, roomCode]);
+    }, [socket, roomCode]); // Ensure dependencies are correct
 
     function handleKeyDown(e) {
         if (e.key === "Enter") {
@@ -71,42 +76,37 @@ function ChatSection({ user }) {
 
     return (
         <div className="chat-section bg-gray-100 border-r shadow-lg flex flex-col h-full lg:w-3/10 w-full lg:min-h-0 min-h-[700px]">
-            {/* Messages container */}
             <div className="messages flex-1 overflow-y-scroll p-4 space-y-4 bg-gray-50 max-h-[90vh] scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-gray-200">
                 {messages.map((msg, index) => (
                     <div
-                    key={index}
-                    className={`message flex items-center justify-between p-2 rounded-lg ${
-                        msg.sender.username === user.username
-                            ? "bg-blue-100 self-end"
-                            : "bg-gray-200"
-                    }`}
-                >
-                    {/* Left: Avatar, Name, and Message */}
-                    <div className="flex items-start space-x-3">
-                        <img
-                            src={msg.sender.avatar}
-                            alt={msg.sender.username}
-                            className="w-10 h-10 rounded-full bg-white border"
-                        />
-                        <div className="message-content">
-                            <p className="font-semibold text-blue-700 text-left">{msg.sender.username}</p>
-                            <p className="text-gray-700 text-left">{msg.message}</p>
+                        key={index}
+                        className={`message flex items-center justify-between p-2 rounded-lg ${
+                            msg.sender.username === user.username
+                                ? "bg-blue-100 self-end"
+                                : "bg-gray-200"
+                        }`}
+                    >
+                        <div className="flex items-start space-x-3">
+                            <img
+                                src={msg.sender.avatar}
+                                alt={msg.sender.username}
+                                className="w-10 h-10 rounded-full bg-white border"
+                            />
+                            <div className="message-content">
+                                <p className="font-semibold text-blue-700 text-left">{msg.sender.username}</p>
+                                <p className="text-gray-700 text-left">{msg.message}</p>
+                            </div>
                         </div>
+                        <span className="text-xs text-gray-500">
+                            {new Date(msg.timestamp).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            })}
+                        </span>
                     </div>
-                
-                    {/* Right: Timestamp */}
-                    <span className="text-xs text-gray-500">
-                        {new Date(msg.timestamp).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                        })}
-                    </span>
-                </div>
                 ))}
             </div>
 
-            {/* Input section */}
             <div className="input-section flex items-center p-3 bg-white border-t">
                 <input
                     type="text"
