@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSocket } from "../../contexts/SocketContext";
-import useNavigate from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function CreateRoomDialog() {
   const socket = useSocket();
