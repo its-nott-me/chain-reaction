@@ -31,7 +31,6 @@ const io = new Server(server, {
         credentials: true,
     }
 });
-console.log(process.env.FRONTEND_URL)
 
 // -- Middlewares --
 app.use(cors({
@@ -120,16 +119,16 @@ passport.use("local",
 );
 
 // Google OAuth Routes
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+// app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-app.get('/auth/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
-    if (req.user) {
-        res.redirect(`http://localhost:3000/auth/google/callback?token=${req.user.token}`);
-    } else {
-        console.error("OAuth error: ", error)
-        res.status(401).send('Authentication failed');
-    }
-});
+// app.get('/auth/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
+//     if (req.user) {
+//         res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${req.user.token}`);
+//     } else {
+//         console.error("OAuth error: ", error)
+//         res.status(401).send('Authentication failed');
+//     }
+// });
 
 
 // -- Socket Congfigs --
@@ -495,7 +494,7 @@ app.get("/auth/google/callback",
             const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
             // Redirect with token
-            res.redirect(process.env.FRONTEND_URL);
+            res.redirect(`${process.env.FRONTEND_URL}?token=${token}`);
         } catch (error) {
             console.error('Error during Google OAuth callback:', error);
             res.redirect("/login");
