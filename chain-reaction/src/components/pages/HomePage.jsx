@@ -2,6 +2,7 @@ import React from "react";
 import Header from "../headers/Header";
 import OAuthButton from "../authComponents/OAuthButton";
 import LogoutButton from "../authComponents/LogoutButton";
+import { Link } from "react-router-dom";
 
     function HomePage() {
     return ( //
@@ -51,30 +52,30 @@ import LogoutButton from "../authComponents/LogoutButton";
 
                 {/* Links */}
                 <div className="grid grid-cols-2 gap-6">
-                <a
-                    href="/offline"
+                <Link
+                    to="/offline"
                     className="bg-blue-500 hover:bg-blue-400 text-lg font-semibold py-3 px-6 rounded-full transition-transform transform hover:scale-110"
                 >
                     Play Offline
-                </a>
-                <a
-                    href="/online"
+                </Link>
+                <Link
+                    to="/online"
                     className="bg-green-500 hover:bg-green-400 text-lg font-semibold py-3 px-6 rounded-full transition-transform transform hover:scale-110"
                 >
                     Play Online
-                </a>
-                <a
-                    href="/register"
+                </Link>
+                <Link
+                    to="/register"
                     className="bg-purple-500 hover:bg-purple-400 text-lg font-semibold py-3 px-6 rounded-full transition-transform transform hover:scale-110"
                 >
                     Register
-                </a>
-                <a
-                    href="/login"
+                </Link>
+                <Link
+                    to="/login"
                     className="bg-orange-500 hover:bg-orange-400 text-lg font-semibold py-3 px-6 rounded-full transition-transform transform hover:scale-110"
                 >
                     Login
-                </a>
+                </Link>
                 </div>
 
                 {/* Authentication Buttons */}
@@ -84,8 +85,8 @@ import LogoutButton from "../authComponents/LogoutButton";
                 </div>
             </div>
             {/* Help Button - Floating */}
-            <a
-                href="/how-to"
+            <Link
+                to="/how-to"
                 title="How to Play"
                 className="fixed bottom-6 right-6 z-50 bg-white p-3 rounded-full shadow-lg hover:scale-110 transition-transform group"
             >
@@ -103,7 +104,7 @@ import LogoutButton from "../authComponents/LogoutButton";
                     d="M8 10c0-1.105.895-2 2-2h2a2 2 0 110 4h-1v1m0 4h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"
                 />
             </svg>
-            </a>
+            </Link>
         </div>
     );
     }
