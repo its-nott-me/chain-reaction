@@ -475,11 +475,12 @@ app.get("/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/login", session: false }),
     async (req, res) => {
         try {
+            console.log(req.user)
             const userData = {
                 provider: 'google',
                 googleId: req.user.id,
                 username: req.user.displayName,
-                email: req.user.emails[0].value,
+                email: req.user.email,
                 profilePicture: "https://cdn-icons-png.flaticon.com/256/1752/1752776.png",
             };
 
@@ -494,10 +495,10 @@ app.get("/auth/google/callback",
             const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
             // Redirect with token
-            res.redirect(`${process.env.FRONTEND_URL}?token=${token}`);
+            res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${req.user.token}`);
         } catch (error) {
             console.error('Error during Google OAuth callback:', error);
-            res.redirect("/login");
+            res.status(401).send('Authentication failed');
         }
     }
 );
