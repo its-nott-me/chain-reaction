@@ -1,10 +1,11 @@
 import React from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function LogoutButton(){
+    const navigate = useNavigate();
     function handleLogout(){
         localStorage.removeItem("token");
-        window.location.href = "/logoutSuccess";
+        navigate("/logoutSuccess");
     }
 
     return (

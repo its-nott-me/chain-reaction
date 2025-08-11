@@ -1,9 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 function OAuthButton(){
+    const navigate = useNavigate();
     const apiURL = process.env.REACT_APP_API_URL;
     function handleLogin(){
-        window.location.href = `${apiURL}/auth/google`;
+        navigate(`${apiURL}/auth/google`);
     };
 
     return (

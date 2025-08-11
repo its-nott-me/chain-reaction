@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Header from "../headers/Header";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const navigate = useNavigate();
     const apiURL = process.env.REACT_APP_API_URL;
 
     const handleLogin = async (e) => {
@@ -17,7 +19,7 @@ function Login() {
             if (response.status === 200) {
                 // Store the JWT token in local storage
                 localStorage.setItem('token', response.data.token);
-                window.location.href = "/";
+                navigate("/");
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {

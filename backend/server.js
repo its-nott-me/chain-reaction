@@ -319,7 +319,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("update-player-settings", async(playerData) => {
-        socket.broadcast.to(playerData.roomCode).emit("player-settings-updated", playerData);
+        io.to(playerData.roomCode).emit("player-settings-updated", playerData);
         
         await PlayerSetting.updateMany(
             { email: playerData.email },
@@ -333,8 +333,9 @@ io.on("connection", (socket) => {
         );
     });
 
-    socket.on("update-avatar", async(avatarURL, userId) => {
-        await User.findOneAndUpdate({_id: userId}, {profilePicture: avatarURL});
+    socket.on("update-avatar", async(avatarURL, userId, roomCode) => {
+        const user = await User.findOneAndUpdate({_id: userId}, {profilePicture: avatarURL});
+        io.to(roomCode).emit("avatar-updated", avatarURL, user.username);
     })
 
     socket.on("start-game", async (roomCode, gridSize) => {

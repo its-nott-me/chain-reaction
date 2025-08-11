@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
-import Header from "../headers/Header"
+import Header from "../headers/Header";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
     const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ function Register() {
     const [showLogin, setShowLogin] = useState(false);
     const [showAvatars, setShowAvatars] = useState(false);
     const [selectedAvatar, setSelectedAvatar] = useState("https://cdn-icons-png.flaticon.com/256/1752/1752776.png");
+    const navigate = useNavigate();
     const apiURL = process.env.REACT_APP_API_URL;
 
     const avatars = [
@@ -61,7 +63,7 @@ function Register() {
 
         try {
             const response = await axios.post(`${apiURL}/register`, { email, password, username, avatar: selectedAvatar });
-            if (response.status === 201) window.location.href = "/login";
+            if (response.status === 201) navigate("/login");
         } catch (error) {
             if (error.response && error.response.status === 400) {
                 setError("User already registered. Please try ");

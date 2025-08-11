@@ -6,6 +6,7 @@ import ChatSection from "./ChatSection";  // Import the ChatSection component
 import axios from "axios";
 import PlayerSettings from "./PlayerSetting";
 import GridSizeInput from "./GridSizeInput";
+import { useNavigate } from "react-router-dom";
 
 function WaitingRoom() {
     const { roomCode } = useParams();
@@ -17,8 +18,10 @@ function WaitingRoom() {
     const [gridSize, setGridSize] = useState({rows: 12, cols: 6});
     const [canEditInput, setCanEditInput] = useState(false);
     const [showAvatars, setShowAvatars] = useState(false); // To toggle avatar box
-    const [selectedAvatar, setSelectedAvatar] = useState("");
+    const navigate = useNavigate();
     const apiURL = process.env.REACT_APP_API_URL;
+    const [selectedAvatar, setSelectedAvatar] = useState("");
+    const [copied, setCopied] = useState(false);
 
     const avatars = [
         "https://cdn-icons-png.flaticon.com/512/1752/1752691.png", // gastly
@@ -63,6 +66,12 @@ function WaitingRoom() {
         // Add more avatar URLs here...
     ];
 
+    function handleCopyRoomCode() {
+        navigator.clipboard.writeText(roomCode);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    }
+
     const token = localStorage.getItem("token");
 
     async function getUser() {
@@ -75,7 +84,7 @@ function WaitingRoom() {
             console.log(response.data);
             setUser(response.data);
         }  catch (error) {
-            window.location.href = "/unauthorised";
+            navigate("/unauthorised");
         }
     }
 
@@ -177,7 +186,7 @@ function WaitingRoom() {
 
     function handleSelectAvatar(index){
         setSelectedAvatar(avatars[index]);
-        socket.emit("update-avatar", avatars[index], user.userId);
+        socket.emit("update-avatar", avatars[index], user.userId, roomCode);
     }
 
     if(!user || !owner) {return};
@@ -223,9 +232,22 @@ function WaitingRoom() {
 
                 {/* Settings Section */}
                 <div className="settings overflow-y-auto lg:max-h-[90vh] scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-gray-200 bg-game-gradient bg-gray-200 p-6 w-full lg:w-1/3 flex-shrink-0 order-1 lg:order-2">
-                <p className="text-xl font-bold mb-4 text-amber-200 rounded-md px-4 py-2 ">
+                <p className="text-xl font-bold mb-4 text-amber-200 rounded-md px-4 py-2 gap-2">
                     Room code: {roomCode}
+                    <button
+                        onClick={handleCopyRoomCode}
+                        className="text-amber-300 px-3 hover:text-amber-100 text-sm transition-colors"
+                        title="Copy to clipboard"
+                    >
+                        📋
+                    </button>
+                    {copied && (
+                        <span className="fixed bg-green-500 text-white px-3 py-1 rounded-lg text-sm shadow-md animate-fadeIn">
+                            Copied!
+                        </span>
+                    )}
                 </p>
+
 
                     {/* Game Controls */}
                     <div className="mb-6 flex justify-center gap-6">

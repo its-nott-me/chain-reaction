@@ -23,6 +23,17 @@ function ChatSection({ user }) {
                 setMessages((prevMessages) => [...prevMessages, message]);
             });
 
+            socket.on("avatar-updated", (avatarURL, username) => {
+                setMessages(prevMessages =>
+                    prevMessages.map(msg =>
+                    msg.sender.username === username
+                        ? { ...msg, sender: { ...msg.sender, avatar: avatarURL } }
+                        : msg
+                    )
+                );
+            });
+
+
             // Fetch previous messages when component mounts
             axios
                 .get(`${apiURL}/messages/${roomCode}`, {
@@ -40,6 +51,7 @@ function ChatSection({ user }) {
             // Cleanup on component unmount
             return () => {
                 socket.off("new-message");
+                socket.off("avatar-updated");
             };
         }
     }, [socket, roomCode]); // Ensure dependencies are correct
