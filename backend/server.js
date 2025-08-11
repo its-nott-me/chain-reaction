@@ -413,11 +413,13 @@ io.on("connection", (socket) => {
     socket.on("update-grid-size", async(roomCode, gridSize) => {
         console.log("gridsize: ", gridSize);
         const roomCodeEntry = await RoomCode.findOne({code: roomCode});
-        await WaitingRoom.findOneAndUpdate(
-            {roomData: roomCodeEntry._id},
-            { $set: { gridSize } },
-        )
-        socket.broadcast.to(roomCode).emit("grid-size-updated", gridSize);
+        if(roomCodeEntry){
+            await WaitingRoom.findOneAndUpdate(
+                { roomData: roomCodeEntry._id },
+                { $set: { gridSize } },
+            )
+            socket.broadcast.to(roomCode).emit("grid-size-updated", gridSize);
+        }
     });
 
     socket.on("switch-players", (nextPlayerIndex, roomId) => {

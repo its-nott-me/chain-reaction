@@ -153,7 +153,7 @@ function WaitingRoom() {
 
     useEffect(() => {
         if(socket){
-            (owner?.email === user.email) && socket.emit("update-grid-size", roomCode, gridSize);
+            (owner?.email === user?.email) && socket.emit("update-grid-size", roomCode, gridSize);
         }
     }, [gridSize]);
 
