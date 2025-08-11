@@ -78,52 +78,51 @@ function Register() {
         <div className="min-h-screen flex flex-col bg-game-gradient">
             {/* Sticky Header */}
             <div className="sticky top-0 z-10 w-full bg-white shadow-md">
-                <Header/>
+                <Header />
             </div>
 
             {/* Main Content */}
             <div className="flex-grow flex items-center justify-center relative">
+
                 {/* Animated Grid Background */}
-                
-                {/* Main Content */}
-                    {/* Animated Grid Background */}
-                    <div className="absolute inset-0 z-0 grid grid-cols-12 gap-4 opacity-20">
-                        {[...Array(50)].map((_, i) => (
-                            <div
-                                key={i}
-                                className={`w-6 h-6 rounded-full animate-glowPulse ${['bg-pink-200', 'bg-yellow-200', 'bg-purple-200'][Math.floor(Math.random() * 3)]}`}
-                                style={{
-                                    animationDelay: `${Math.random() * 5}s`,
-                                    animationDuration: `${Math.random() * 4 + 3}s`,
-                                }}
-                            ></div>
-                        ))}
-                    </div>
+                <div className="absolute inset-0 z-0 grid grid-cols-12 gap-4 opacity-20">
+                    {[...Array(50)].map((_, i) => (
+                        <div
+                            key={i}
+                            className={`w-6 h-6 rounded-full animate-glowPulse ${['bg-pink-200', 'bg-yellow-200', 'bg-purple-200'][Math.floor(Math.random() * 3)]}`}
+                            style={{
+                                animationDelay: `${Math.random() * 5}s`,
+                                animationDuration: `${Math.random() * 4 + 3}s`,
+                            }}
+                        ></div>
+                    ))}
+                </div>
 
-                    {/* Floating Orbs */}
-                    <div className="absolute inset-0 z-0 flex justify-center items-center overflow-hidden">
-                        {[...Array(12)].map((_, i) => (
-                            <div
-                                key={i}
-                                className="w-10 h-10 bg-yellow-400 rounded-full animate-bounceOrb shadow-xl"
-                                style={{
-                                    animationDelay: `${Math.random() * 3}s`,
-                                    animationDuration: `${Math.random() * 2 + 2}s`,
-                                    left: `${Math.random() * 100}%`,
-                                    top: `${Math.random() * 100}%`,
-                                    position: "absolute",
-                                }}
-                            ></div>
-                        ))}
-                    </div>
+                {/* Floating Orbs */}
+                <div className="absolute inset-0 z-0 flex justify-center items-center overflow-hidden">
+                    {[...Array(12)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="w-10 h-10 bg-yellow-400 rounded-full animate-bounceOrb shadow-xl"
+                            style={{
+                                animationDelay: `${Math.random() * 3}s`,
+                                animationDuration: `${Math.random() * 2 + 2}s`,
+                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 100}%`,
+                                position: "absolute",
+                            }}
+                        ></div>
+                    ))}
+                </div>
 
+                {/* Form */}
+                <div className="relative z-10 w-full max-w-md p-8 space-y-6 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-100 hover:scale-[1.02] transition-transform duration-300">
+                    <h2 className="text-3xl font-extrabold text-center text-purple-700">Create Your Account</h2>
 
-                {/* Registration Form */}
-                <div className="z-10 w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg transform hover:scale-105 transition duration-300 ease-in-out">
-                    <h2 className="text-3xl font-bold text-center text-gray-800">Create Your Account</h2>
-                    <form onSubmit={handleRegister} className="space-y-6">
+                    <form onSubmit={handleRegister} className="space-y-5">
+                        {/* Username */}
                         <div>
-                            <label htmlFor="username" className="block text-sm font-medium text-gray-600">
+                            <label htmlFor="username" className="block text-sm font-semibold text-purple-700">
                                 Username
                             </label>
                             <input
@@ -132,11 +131,13 @@ function Register() {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
-                                className="w-full px-4 py-2 mt-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                className="w-full px-4 py-2 mt-1 text-purple-800 bg-white border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
                             />
                         </div>
+
+                        {/* Email */}
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-600">
+                            <label htmlFor="email" className="block text-sm font-semibold text-purple-700">
                                 Email
                             </label>
                             <input
@@ -145,11 +146,13 @@ function Register() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="w-full px-4 py-2 mt-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                className="w-full px-4 py-2 mt-1 text-purple-800 bg-white border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
                             />
                         </div>
+
+                        {/* Password */}
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-600">
+                            <label htmlFor="password" className="block text-sm font-semibold text-purple-700">
                                 Password
                             </label>
                             <input
@@ -158,20 +161,24 @@ function Register() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="w-full px-4 py-2 mt-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                className="w-full px-4 py-2 mt-1 text-purple-800 bg-white border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
                             />
                         </div>
+
+                        {/* Avatar Toggle Button */}
                         <div>
                             <button
                                 type="button"
-                                className="w-full px-4 py-2 text-lg font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                                 onClick={() => setShowAvatars(!showAvatars)}
+                                className="w-full px-4 py-2 text-lg font-semibold text-white bg-pink-500 rounded-lg hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-300"
                             >
                                 {showAvatars ? "Hide Avatars" : "Choose an Avatar"}
                             </button>
+
+                            {/* Avatar Grid */}
                             {showAvatars && (
-                                <div className="p-4 mt-4 border border-gray-300 rounded-lg">
-                                    <h3 className="mb-2 text-center text-gray-600">Select Your Avatar</h3>
+                                <div className="p-4 mt-4 bg-white border-2 border-purple-200 rounded-lg shadow-md">
+                                    <h3 className="mb-3 text-center text-purple-700 font-semibold">Select Your Avatar</h3>
                                     <div className="grid grid-cols-4 gap-4">
                                         {avatars.map((avatar, index) => (
                                             <img
@@ -179,7 +186,7 @@ function Register() {
                                                 src={avatar}
                                                 alt={`Avatar ${index}`}
                                                 onClick={() => setSelectedAvatar(avatar)}
-                                                className={`w-16 h-16 rounded-full cursor-pointer border-2 ${
+                                                className={`w-16 h-16 rounded-full cursor-pointer border-4 transition-transform hover:scale-110 ${
                                                     selectedAvatar === avatar ? "border-pink-500" : "border-transparent"
                                                 }`}
                                             />
@@ -188,34 +195,35 @@ function Register() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full px-4 py-2 text-lg font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                            >
+                            className="w-full px-4 py-2 text-lg font-bold text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                        >
                             Register
                         </button>
                     </form>
+
+                    {/* Error Message */}
                     {error && (
-                        <p className="mt-4 text-center text-red-500">
+                        <p className="mt-4 text-center text-red-600 font-medium">
                             {error}
                             {showLogin && (
-                                <a href="/login" className="ml-1 text-blue-500 underline">
+                                <a href="/login" className="ml-1 text-blue-600 underline hover:text-blue-800">
                                     logging in
                                 </a>
                             )}
                         </p>
                     )}
-                    <div className="mt-6 text-center">
-                            <p className="text-gray-600">
-                                Already have an account?{" "}
-                                <a
-                                    href="/login"
-                                    className="text-indigo-600 font-semibold hover:underline"
-                                >
-                                    Login here
-                                </a>
-                            </p>
-                        </div>
+
+                    {/* Login Link */}
+                    <div className="text-center text-sm text-purple-600">
+                        Already have an account?{" "}
+                        <a href="/login" className="font-semibold text-indigo-600 hover:underline">
+                            Login here
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

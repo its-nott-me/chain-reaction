@@ -12,6 +12,7 @@ import OnlineGame from './components/pages/OnlineGame';
 import UnauthorizedPage from './components/errorPages/Unauthorised_401';
 import LoggedOutPage from './components/authComponents/LoggedOutPage';
 import NotFoundPage from './components/errorPages/NotFound_404';
+import HowToPlayPage from './components/pages/HowToPlay';
 
 function App() {
   return (
@@ -29,8 +30,8 @@ function App() {
 
             <Route path="/unauthorised" element={<UnauthorizedPage />} />
             <Route path="/logoutSuccess" element={<LoggedOutPage />} />
+            <Route path="/how-to" element={<HowToPlayPage />} />
             <Route path="*" element={<NotFoundPage />} />
-
           </Routes>
         </Router>
     </div>

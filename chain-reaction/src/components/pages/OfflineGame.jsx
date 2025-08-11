@@ -95,7 +95,7 @@ function OfflineGame(){
                         <h1 className="text-4xl font-bold text-center text-amber-200 tracking-widest">
                             Setup Your Game
                         </h1>
-                        <div className="space-y-4">
+                        <div className="space-y-4 items-center flex flex-col">
                             <DropdownMenu onSelect={handleSelect} />
                             <PlayerSettings numberOfPlayers={numberOfPlayers} playersData={setPlayersData} />
                             <GridSizeInput setGridSize={setGridSize} />

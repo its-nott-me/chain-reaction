@@ -83,6 +83,27 @@ import LogoutButton from "../authComponents/LogoutButton";
                 <LogoutButton />
                 </div>
             </div>
+            {/* Help Button - Floating */}
+            <a
+                href="/how-to"
+                title="How to Play"
+                className="fixed bottom-6 right-6 z-50 bg-white p-3 rounded-full shadow-lg hover:scale-110 transition-transform group"
+            >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6 text-gray-700 group-hover:text-yellow-500 transition-colors"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8 10c0-1.105.895-2 2-2h2a2 2 0 110 4h-1v1m0 4h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"
+                />
+            </svg>
+            </a>
         </div>
     );
     }

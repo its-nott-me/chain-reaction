@@ -463,10 +463,12 @@ app.get("/", (req, res) => {
 });
 
 // Routes for OAuth2 Start
-app.get("/auth/google", passport.authenticate("google", {
-    scope: ["profile", "email"],
-    prompt: "select_account",
-}));
+app.get("/auth/google", (req, res, next) => {
+    passport.authenticate("google", {
+        scope: ["profile", "email"],
+        prompt: "select_account",
+    })(req, res, next);
+});
 
 // handling success and failed login 
 app.get("/auth/google/callback", 
@@ -492,7 +494,7 @@ app.get("/auth/google/callback",
             const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
             // Redirect with token
-            res.redirect(`${process.env.FRONTEND_URL}?token=${token}`);
+            res.redirect(process.env.FRONTEND_URL);
         } catch (error) {
             console.error('Error during Google OAuth callback:', error);
             res.redirect("/login");
