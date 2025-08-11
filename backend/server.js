@@ -124,8 +124,9 @@ app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'em
 
 app.get('/auth/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
     if (req.user) {
-        res.json({ token: req.user.token }); // Send JWT token to the client
+        res.redirect(`http://localhost:3000/auth/google/callback?token=${req.user.token}`);
     } else {
+        console.error("OAuth error: ", error)
         res.status(401).send('Authentication failed');
     }
 });

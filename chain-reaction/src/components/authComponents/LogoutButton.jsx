@@ -2,9 +2,8 @@ import React from "react";
 import axios from "axios";
 
 function LogoutButton(){
-    const apiURL = process.env.REACT_APP_API_URL;
-    async function handleLogout(){
-        await axios.get(`${apiURL}/logout`);
+    function handleLogout(){
+        localStorage.removeItem("token");
         window.location.href = "/logoutSuccess";
     }
 
