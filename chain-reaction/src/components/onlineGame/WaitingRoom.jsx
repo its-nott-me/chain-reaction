@@ -81,7 +81,7 @@ function WaitingRoom() {
                     Authorization: `Bearer ${token}`,
                 }
             });
-            console.log(response.data);
+            // console.log(response.data);
             setUser(response.data);
         }  catch (error) {
             navigate("/unauthorised");
@@ -95,11 +95,11 @@ function WaitingRoom() {
                     Authorization: `Bearer ${token}`,
                 }
             });
-        console.log(response.data);
+        // console.log(response.data);
         setOwner(response.data);
         return response.data;
         } catch (error) {
-            window.location.href = "/unauthorised";
+            navigate("/unauthorised");
         }
     }
 
@@ -123,20 +123,20 @@ function WaitingRoom() {
             socket.emit("join-wait-room", roomCode);
 
             socket.on("owner-updated", (updatedOwner) => {
-                console.log(updatedOwner);
+                // console.log(updatedOwner);
                 setOwner(updatedOwner);
             });
 
             socket.on("game-started", async () => {
-                console.log("owner: ", owner);
+                // console.log("owner: ", owner);
                 let response = await getOwner();
-                console.log(response)
-                window.location.href=`/online/game/${owner?.userId || response.userId}`;
+                // console.log(response)
+                navigate(`/online/game/${owner?.userId || response.userId}`);
             });
 
             socket.on("grid-size-updated", (updatedGridSize) => {
                 if (gridSize !== updatedGridSize) { setGridSize(updatedGridSize) };
-                console.log(updatedGridSize)
+                // console.log(updatedGridSize)
             })
 
             return () => {
@@ -164,7 +164,7 @@ function WaitingRoom() {
     }, [user, owner]);
 
     useEffect(() => {
-        console.log(players)
+        // console.log(players)
         if(players.length+1 >= 2) {setError(false)}
         else {setError(true)}
     }, [players]);
@@ -181,7 +181,7 @@ function WaitingRoom() {
             roomCode
         }
         socket.emit("leave-waiting-room", player);
-        window.location.href = "/online";
+        navigate("/online");
     }
 
     function handleSelectAvatar(index){

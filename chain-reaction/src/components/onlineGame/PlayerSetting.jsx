@@ -39,7 +39,7 @@ function PlayerSettings({ user, roomCode, playersData }) {
     const handleFormSubmit = (e) => {
         e.preventDefault();
         if (socket) {
-            console.log(player);
+            // console.log(player);
             socket.emit('update-player-settings', player);
         }
     };

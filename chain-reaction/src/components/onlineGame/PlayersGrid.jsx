@@ -12,7 +12,7 @@ const PlayersGrid = ({ roomCode, user, playersData }) => {
 
     // Function to add or update a player, avoiding duplicates
     const addOrUpdatePlayer = (newPlayer) => {
-        console.log(newPlayer)
+        // console.log(newPlayer)
         setPlayers((prevPlayers) => {
             // Check if the player already exists in the current state
             if(user.email === newPlayer.email){ return prevPlayers };

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSocket } from "../../contexts/SocketContext";
+import useNavigate from "react-router-dom";
 
 function CreateRoomDialog() {
   const socket = useSocket();
   const [roomCode, setRoomCode] = useState("");
   const [user, setUser] = useState(null);
   const [copied, setCopied] = useState(false);
+  const navigate = useNavigate();
   const apiURL = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
@@ -23,8 +25,8 @@ function CreateRoomDialog() {
         });
         setRoomCode(response.data.roomCode);
       } catch (error) {
-        console.log(error);
-        window.location.href = "/unauthorised";
+        console.error(error);
+        navigate("/unauthorised");
       }
     }
 
@@ -34,7 +36,7 @@ function CreateRoomDialog() {
   useEffect(() => {
     if (socket) {
       socket.on("wait-room-created", () => {
-        window.location.href = `/online/waiting/${roomCode}`;
+         navigate(`/online/waiting/${roomCode}`);
       });
       return () => socket.off("wait-room-created");
     }

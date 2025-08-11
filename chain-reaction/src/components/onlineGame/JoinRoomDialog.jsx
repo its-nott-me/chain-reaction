@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useSocket } from "../../contexts/SocketContext";
+import { useNavigate } from "react-router-dom";
 
 function JoinRoomDialog() {
     const [roomCode, setRoomCode] = useState("");
     const socket = useSocket();
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (socket) {
             const onWaitRoomJoined = () => {
-                window.location.href = `/online/waiting/${roomCode}`;
+                navigate(`/online/waiting/${roomCode}`);
             };
 
             const onInvalidRoomCode = () => {

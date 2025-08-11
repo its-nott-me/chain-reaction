@@ -8,7 +8,7 @@ function GridSizeInput({gridSizeData, canEditInput}) {
     const [isInvalid, setIsInvalid] = useState(false);
     const [isNotHidden, setIsNotHidden] = useState(false);
 
-    console.log(canEditInput)
+    // console.log(canEditInput)
 
     useEffect(() => {
         isInvalid ? setGridSize({rows: 12, cols: 6}) : setGridSize({rows: rows, cols: cols});

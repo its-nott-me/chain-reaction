@@ -7,6 +7,7 @@ import ChatSection from "../onlineGame/ChatSection";
 import LostGameDialog from "../onlineGame/gridComponents/LostGameDialog";
 import { useSocket } from "../../contexts/SocketContext";
 import WinGameDialog from "../onlineGame/gridComponents/WinGameDialog";
+import { useNavigate } from "react-router-dom";
 
 function OnlineGame() {
     const { roomId } = useParams(); // room Id is owner.userId
@@ -14,6 +15,7 @@ function OnlineGame() {
     const [user, setUser] = useState();
     const [isLostDialogOpen, setIsLostDialogOpen] = useState(false);
     const [isWinDialogOpen, setIsWinDialogOpen] = useState(false);
+    const navigate = useNavigate();
     const socket = useSocket();
     const apiURL = process.env.REACT_APP_API_URL;
     const token = localStorage.getItem("token");
@@ -22,11 +24,11 @@ function OnlineGame() {
         if (socket) {
             socket.on("wait-room-created", (roomCode) => {
                 socket.emit("restart-game", roomId, roomCode);
-                window.location.href = `/online/waiting/${roomCode}`;
+                navigate(`/online/waiting/${roomCode}`);
             });
 
             socket.on("game-restarted", (roomCode) => {
-                window.location.href = `/online/waiting/${roomCode}`;
+                navigate(`/online/waiting/${roomCode}`);
             })
 
             return () => {
@@ -61,7 +63,7 @@ function OnlineGame() {
             }
         });
         const waitingRoomCode = response.data.roomCode;
-        console.log(response);
+        // console.log(response);
 
         socket.emit("create-wait-room", waitingRoomCode, user);
         setIsWinDialogOpen(false);
@@ -73,8 +75,8 @@ function OnlineGame() {
                     Authorization: `Bearer ${token}`,
                 }
             });
-        console.log(response.data);
-        if(!response.data){window.location.href = "/unauthorised";}
+        // console.log(response.data);
+        if(!response.data){navigate("/unauthorised")}
         setGridData(response.data);
     }
 
@@ -86,10 +88,10 @@ function OnlineGame() {
                 }
             });
             setUser(response.data);
-            console.log(response.data);
+            // console.log(response.data);
         } catch (error) {
             if(error.status === 401){
-                window.location.href = "/unauthorised";
+                navigate("/unauthorised");
             }
         }
     }

@@ -49,7 +49,7 @@ function Game() {
             checkForExplosions(newGrid, row, col);
         } else if (cell.owner !== currentPlayer && cell.owner !== null) {
             // Do nothing if the player clicks an occupied opponent's cell
-            console.log("You cannot add orbs to your opponent's cell!");
+            // console.log("You cannot add orbs to your opponent's cell!");
         } else {
             // If the cell is empty, take ownership and add one orb
             const newGrid = grid.map((r, rowIndex) => {

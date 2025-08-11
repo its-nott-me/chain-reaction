@@ -32,7 +32,7 @@ function OfflineGame(){
                     }
                 });
                 setIsAuthenticated(result.data === true); // Ensures it’s a boolean
-                console.log("Auth Status from server:", result.data); // Log exact response
+                // console.log("Auth Status from server:", result.data); // Log exact response
             } catch (err) {
                 console.error("Error checking if authenticated:", err);
             }

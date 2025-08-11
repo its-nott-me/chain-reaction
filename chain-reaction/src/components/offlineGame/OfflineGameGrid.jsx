@@ -120,7 +120,7 @@ function OfflineGameGrid({gridData, authenticated}){
             )
         );
 
-        console.log(players)
+        // console.log(players)
     }
 
     async function handleCellClick(row, col) {
@@ -189,14 +189,14 @@ function OfflineGameGrid({gridData, authenticated}){
         tempGrid = tempGrid === undefined ? grid : tempGrid;
         // console.log("checking");
         // waaaaaaaaaaaaaaaaaaaa i am dumb
-        console.log(tempGrid)
+        // console.log(tempGrid)
         players.forEach((player) => {
             let playerHasOrbs = tempGrid.some(r => r.some(cell => 
                 cell.owner === player.index && cell.orbs > 0
             ))
-            console.log(player.index ,playerHasOrbs, playerHasPlayed[player.index]);
+            // console.log(player.index ,playerHasOrbs, playerHasPlayed[player.index]);
             if(!playerHasOrbs && playerHasPlayed[player.index]){
-                console.log(playerHasPlayed, player.lost)
+                // console.log(playerHasPlayed, player.lost)
                 player.lost = true;
             }
         });
@@ -209,7 +209,7 @@ function OfflineGameGrid({gridData, authenticated}){
         // that means u lost.. dumbhead
         if(numOfPlayersAlive.length === 1){
             setIsGameOver(true); // mata ashitha
-            console.log(`${players.filter(p => p.lost).map(p => p.name)}`);
+            // console.log(`${players.filter(p => p.lost).map(p => p.name)}`);
         }
     }
 

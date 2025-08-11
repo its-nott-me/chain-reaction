@@ -11,8 +11,8 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!socket) {
       const token = localStorage.getItem('token');
-      console.log("Connecting to:", process.env.REACT_APP_API_URL);
-      console.log("Token:", token);
+      // console.log("Connecting to:", process.env.REACT_APP_API_URL);
+      // console.log("Token:", token);
 
       const newSocket = io(process.env.REACT_APP_API_URL, {
         auth: { token }, 
@@ -23,7 +23,7 @@ export const SocketProvider = ({ children }) => {
       setSocket(newSocket);
 
       newSocket.on("connect", () => {
-        console.log("✅ Connected to socket server");
+        // console.log("✅ Connected to socket server");
       });
 
       newSocket.on("connect_error", (err) => {
@@ -31,7 +31,7 @@ export const SocketProvider = ({ children }) => {
       });
 
       newSocket.on("disconnect", () => {
-        console.log("🔌 Disconnected");
+        // console.log("🔌 Disconnected");
       });
 
       return () => {

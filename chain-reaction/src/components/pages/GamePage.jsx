@@ -144,7 +144,7 @@ function GamePage(){
 
     function checkIfPlayerLost(tempGrid){
         tempGrid = tempGrid === undefined ? grid : tempGrid;
-        console.log("checking");
+        // console.log("checking");
         // waaaaaaaaaaaaaaaaaaaa i am dumb
         players.forEach((player) => {
             let playerHasOrbs = tempGrid.some(r => r.some(cell => 
@@ -152,7 +152,7 @@ function GamePage(){
             ))
 
             if(!playerHasOrbs && playerHasPlayed[player.index]){
-                console.log(playerHasPlayed, player.lost)
+                // console.log(playerHasPlayed, player.lost)
                 player.lost = true;
             }
         })
@@ -168,7 +168,7 @@ function GamePage(){
 
     function gameOver(){
         let winnerIndex = players.filter(player => player.lost === false)[0].index;
-        console.log(players[winnerIndex]);
+        // console.log(players[winnerIndex]);
         isGameOver = true; // mata ashitad
     }
 

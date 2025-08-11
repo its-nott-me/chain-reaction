@@ -49,7 +49,7 @@ import { useSocket } from "../../../contexts/SocketContext";
 
 function OnlineGameGrid({gridData, roomId, user, handleLoseGame, handleWinGame}){ // user variable contains only userID
     // constants for rendering game grid and creating players
-    console.log(gridData)
+    // console.log(gridData)
     const {rows, cols} = useMemo(() => (gridData.gridSize), [gridData.gridSize]);
     const [players, setPlayers] = useState(gridData.players);
 
@@ -107,7 +107,7 @@ function OnlineGameGrid({gridData, roomId, user, handleLoseGame, handleWinGame})
     
             socket.on("players-switched", (nextPlayerIndex) => {
                 setCurrentPlayerIndex(nextPlayerIndex);
-                console.log(nextPlayerIndex);
+                // console.log(nextPlayerIndex);
             });
     
             socket.on("orb-added", async (playerIndex, row, col, orbs) => {
@@ -145,7 +145,7 @@ function OnlineGameGrid({gridData, roomId, user, handleLoseGame, handleWinGame})
                 setPlayers(prev => {
                     const updatedPlayers = prev.map(player => {
                         if(player.index === playerIndex){
-                            console.log("points: ", score);
+                            // console.log("points: ", score);
                             return {
                                 ...player,
                                 score: player.score + (score/2)
@@ -185,7 +185,7 @@ function OnlineGameGrid({gridData, roomId, user, handleLoseGame, handleWinGame})
 
     function incrementScore(score, playerIndex){
         // ~~ how dumb can a person be ?? :) ~~
-        console.log("score: ",score);
+        // console.log("score: ",score);
         // --------------- scoring system: --------------
         // cpatured an empty cell: 10pts
         // captured enemy's cell:  15tps
@@ -221,7 +221,7 @@ function OnlineGameGrid({gridData, roomId, user, handleLoseGame, handleWinGame})
             !isGameOver &&  // some idiot shouldn't have won
             gridData.players[currentPlayerIndex].id === user // u r who u r
         ) {
-            console.log("clicked");
+            // console.log("clicked");
 
             grid[row][col].owner === null ? incrementScore(10, currentPlayerIndex) : incrementScore(5, currentPlayerIndex);
             socket.emit("add-orb", currentPlayerIndex, row, col, grid[row][col].orbs + 1, roomId);
@@ -294,7 +294,7 @@ function OnlineGameGrid({gridData, roomId, user, handleLoseGame, handleWinGame})
                 cell.owner === player.index && cell.orbs > 0
             ))
             if(!playerHasOrbs && playerHasPlayed[player.index]){
-                console.log(playerHasPlayed,"lost: ", player.lost)
+                // console.log(playerHasPlayed,"lost: ", player.lost)
                 player.lost = true;
                 socket.emit("player-lost", player.index, roomId);
                 if(user === player.id){handleLoseGame()}
@@ -309,7 +309,7 @@ function OnlineGameGrid({gridData, roomId, user, handleLoseGame, handleWinGame})
         if(numOfPlayersAlive.length === 1){
             setIsGameOver(true); // mata ashitha
             if(user === numOfPlayersAlive[0].id){handleWinGame()};
-            console.log(`${players.filter(p => p.lost).map(p => p.name)}`);
+            // console.log(`${players.filter(p => p.lost).map(p => p.name)}`);
         }
     }
 
